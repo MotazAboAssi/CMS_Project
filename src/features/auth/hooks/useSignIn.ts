@@ -8,7 +8,8 @@ export function useSignIn() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorAPI, setError] = useState<Error | null>(null);
 
-  const form = useForm<SignInFormValues>({
+  // const form = useForm<SignInFormValues>({
+  const form = useForm({
     resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",
