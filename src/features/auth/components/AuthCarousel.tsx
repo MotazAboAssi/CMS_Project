@@ -1,14 +1,12 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, EffectFade } from "swiper/modules";
-
-// Swiper Structural CSS Core Styles Imports
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
 import { SLIDE_ASSETS } from "../data/Slides";
 import "./../styles/styleCarousel.css"; 
 
-export function AuthCarousel() {
+export default function AuthCarousel() {
   return (
     <div className="absolute top-0 right-0 hidden lg:block w-[55%] h-full bg-neutral-900 overflow-hidden">
       <Swiper

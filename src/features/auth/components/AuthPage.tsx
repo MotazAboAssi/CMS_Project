@@ -1,7 +1,4 @@
-// src/features/auth/index.tsx
-import { AuthCardWrapper } from "./AuthCardWrapper";
-import { SignInForm } from "./SignInForm";
-import { AuthCarousel } from "./AuthCarousel";
+import { AuthCardWrapper, SignInForm, AuthCarousel } from "./";
 
 export default function AuthPage() {
   return (
