@@ -1,5 +1,5 @@
 import { image1, image2, image3, image4 } from "@/assets/auth";
-import type { SlideAsset } from "../types/SlideAsset";
+import type { SlideAsset } from "../types";
 
 export const SLIDE_ASSETS: SlideAsset[] = [
   {

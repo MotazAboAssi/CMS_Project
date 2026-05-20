@@ -5,7 +5,7 @@ interface AuthCardWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
-export const AuthCardWrapper = React.forwardRef<HTMLDivElement, AuthCardWrapperProps>(
+export const CardWithBackground = React.forwardRef<HTMLDivElement, AuthCardWrapperProps>(
   ({ className, children, ...props }, ref) => {
     return (
       <div
@@ -30,4 +30,4 @@ export const AuthCardWrapper = React.forwardRef<HTMLDivElement, AuthCardWrapperP
   }
 );
 
-AuthCardWrapper.displayName = "AuthCardWrapper";
+CardWithBackground.displayName = "AuthCardWrapper";
