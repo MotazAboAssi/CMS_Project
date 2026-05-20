@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { CardWithBackground, AuthCarousel, LayoutCard } from ".";
 import { Outlet } from "react-router";
 

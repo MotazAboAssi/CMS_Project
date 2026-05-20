@@ -10,6 +10,7 @@ import {
 import type { ConfirmEmailFormProps } from "../types";
 import { useNavigate } from "react-router";
 
+
 export default function ConfirmEmailForm({
   isLoading = false,
 }: ConfirmEmailFormProps) {
