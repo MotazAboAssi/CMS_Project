@@ -1,7 +1,16 @@
-import LoginPage from "./features/auth/LoginPage";
+import {
+  ConfirmEmailForm,
+  SignInForm,
+  WithCarouselCard,
+} from "./features/auth/components";
+import { BrowserRouter, Routes, Route } from "react-router";
 
 function App() {
-  return <LoginPage />;
+  return (
+    <BrowserRouter>
+      
+    </BrowserRouter>
+  );
 }
 
 export default App;

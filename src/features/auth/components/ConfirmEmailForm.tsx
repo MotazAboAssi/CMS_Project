@@ -1,7 +1,6 @@
 import * as React from "react";
 import { ArrowLeft } from "lucide-react";
 
-// Shadcn UI Component Dependencies
 import { Button } from "@/components/ui/button";
 import {
   InputOTP,
@@ -9,18 +8,15 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import type { ConfirmEmailFormProps } from "../types";
-
-// 2. Functional Code Verification View Component
+import { useNavigate } from "react-router";
 
 export default function ConfirmEmailForm({
-  onBackToLogin,
-  onVerifyCode,
   isLoading = false,
 }: ConfirmEmailFormProps) {
   const [otpValue, setOtpValue] = React.useState<string>("");
   const [countdown, setCountdown] = React.useState<number>(60);
+  const navigate = useNavigate();
 
-  // Simple reactive link countdown ticker tracking
   React.useEffect(() => {
     if (countdown <= 0) return;
     const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
@@ -35,18 +31,23 @@ export default function ConfirmEmailForm({
     }
   };
 
+  const onVerifyCode = (code: string) => {
+    console.log(code);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (otpValue.length === 6) {
       onVerifyCode(otpValue);
     }
   };
+  const onBackToLogin = () => {
+    navigate("/CMS_Project/auth/login", { replace: true });
+  };
 
   return (
     <>
-      {/* Container tracking matching the signature 360px grid block boundaries */}
       <div className="flex-1 flex flex-col justify-center p-7 w-full mx-auto">
-        {/* Form Typography Header Layout */}
         <div className="mb-4">
           <h1 className="font-inter font-semibold   text-3xl text-[rgb(26_27_30/1)]  tracking-[-0.5px] leading-[1.3]">
             Confirm your Email
@@ -56,8 +57,7 @@ export default function ConfirmEmailForm({
           </p>
         </div>
 
-        {/* Resend Action Link Block */}
-        <div className="mb-[52px]">
+        <div className="mb-13">
           {countdown > 0 ? (
             <span className="text-sm font-inter font-normal tracking-[2%] leading-normal text-[rgba(11_116_250/1)] underline">
               Resend code in {countdown} seconds
@@ -73,9 +73,7 @@ export default function ConfirmEmailForm({
           )}
         </div>
 
-        {/* Interactive OTP Verification Matrix form area */}
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Centered Shadcn InputOTP Configuration */}
           <div className="flex justify-center w-full">
             <InputOTP
               maxLength={6}
@@ -86,7 +84,6 @@ export default function ConfirmEmailForm({
               disabled={isLoading}
               className="w-full disabled:pointer-events-none"
             >
-              {/* Separate layout groups mapped dynamically to build the clear 6-slot code inputs block */}
               <InputOTPGroup className="gap-2 sm:gap-2.5 w-full flex justify-between">
                 {[...Array(6)].map((_, index) => (
                   <InputOTPSlot
@@ -99,7 +96,6 @@ export default function ConfirmEmailForm({
             </InputOTP>
           </div>
 
-          {/* Action Trigger Modules */}
           <div className="space-y-3 mt-22">
             <Button
               type="submit"
@@ -109,7 +105,6 @@ export default function ConfirmEmailForm({
               Confirm code
             </Button>
 
-            {/* Back Navigation Command link element */}
             <div className="text-center">
               <button
                 type="button"
