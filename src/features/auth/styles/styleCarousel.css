@@ -13,7 +13,7 @@
   width: 8px !important;
   height: 8px !important;
   margin: 0 6px !important;
-  background-color: rgba(255, 255, 255, 0.4) !important;
+  background-color:white !important;
   opacity: 1 !important;
   border-radius: 50% !important;
   display: inline-block;
@@ -25,19 +25,18 @@
 .custom-swiper-pagination .custom-bullet-active {
   width: 12px !important;
   height: 12px !important;
-  background-color: #ffffff !important;
+  background-color: #ffffff00 !important;
+  border: 1px solid white;
 }
 
 .custom-swiper-pagination .custom-bullet-active-prev,
 .custom-swiper-pagination .custom-bullet-active-next {
   width: 10px !important;
   height: 10px !important;
-  background-color: rgba(255, 255, 255, 0.7) !important;
 }
 
-.custom-swiper-pagination .custom-bullet-active-prev-prev,
+/* .custom-swiper-pagination .custom-bullet-active-prev-prev,
 .custom-swiper-pagination .custom-bullet-active-next-next {
   width: 8px !important;
   height: 8px !important;
-  background-color: rgba(255, 255, 255, 0.4) !important;
-}
+} */
