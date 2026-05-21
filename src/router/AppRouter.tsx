@@ -4,6 +4,10 @@ import {
   SignInForm,
   ConfirmEmailForm,
 } from "@/features/auth/components";
+import { CheckEmailForm } from "@/features/auth/components/CheckEmailForm";
+import { ForgotPasswordForm } from "@/features/auth/components/ForgetPassword";
+import { LinkExpiredForm } from "@/features/auth/components/LinkExpiredForm";
+import WithoutCarouselCard from "@/features/auth/components/WithoutCarouselCard";
 import { Routes, Route, useNavigate } from "react-router";
 
 export default function AppRouter() {
@@ -15,6 +19,11 @@ export default function AppRouter() {
           <Route index element={<SignInForm />} />
           <Route path="login" element={<SignInForm />} />
           <Route path="otp" element={<ConfirmEmailForm />} />
+          <Route path="forget_password" element={<ForgotPasswordForm />} />
+          <Route path="check_email" element={<CheckEmailForm />} />
+        </Route>
+        <Route path="auth" element={<WithoutCarouselCard />}>
+          <Route path="link_expired" element={<LinkExpiredForm />} />
         </Route>
         <Route path="*" element={<h1>Not Found Page</h1>} />
       </Route>
