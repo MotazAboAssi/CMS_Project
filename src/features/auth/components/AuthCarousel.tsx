@@ -8,7 +8,7 @@ import "./../styles/styleCarousel.css";
 
 export default function AuthCarousel() {
   return (
-    <div className="absolute top-0 right-0 hidden lg:block w-[55%] h-full bg-neutral-900 overflow-hidden">
+    <div className="absolute top-0 right-0 hidden lg:block w-[55%] h-full bg-neutral-900 overflow-hidden ">
       <Swiper
         modules={[Autoplay, Pagination, EffectFade]}
         effect="fade"

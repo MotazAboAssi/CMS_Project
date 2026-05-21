@@ -2,6 +2,7 @@ import * as React from "react";
 import { AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { useSignIn } from "../hooks/useSignIn";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router";
 
 export default function SignInForm() {
   const { form, onSubmit, isLoading, errorAPI } = useSignIn();
@@ -129,12 +130,12 @@ export default function SignInForm() {
           </button>
 
           <div className="text-center pt-1">
-            <a
-              href="#forgot-password"
+            <Link
+              to='/CMS_Project/auth/forget_password'
               className="inline-block text-xs font-semibold text-[#0066ff] hover:underline underline-offset-4 focus:outline-hidden focus:ring-2 focus:ring-blue-200 rounded-sm px-1 py-0.5"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
         </div>
       </form>
