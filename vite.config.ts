@@ -6,6 +6,9 @@ import path from "path";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    chunkSizeWarningLimit: 800, // Increase this to 800kB or higher
+  },
   base: "/CMS_Project/",
   resolve: {
     alias: {
