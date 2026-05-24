@@ -11,15 +11,15 @@ export default function LayoutCard({
   return (
     <div
       className={cn(
-        "flex flex-col justify-between w-full h-full p-6 sm:p-10 lg:p-6 bg-white rounded-4xl z-10 transition-all duration-300",
+        "flex flex-col justify-between w-full h-full p-6 bg-white rounded-4xl z-10 transition-all duration-300",
         className,
       )}
     >
-      <div className="flex items-center gap-2.5 mb-6 lg:mb-0 select-none">
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg text-[#0066ff]">
-          <PlusIcon className="w-5 h-5 stroke-3" />
+      <div className="flex items-center gap-3 mb-6 lg:mb-0 select-none">
+        <div className="flex items-center justify-center w-6.25 h-6.25 rounded-lg text-[#0B74FA]">
+          <PlusIcon className="w-6.25 h-6.25 stroke-[7px]" />
         </div>
-        <span className="font-sans font-bold tracking-tight text-lg text-neutral-900 leading-tight">
+        <span className="font-inter font-semibold tracking-[2%] text-lg  leading-[1.2] text-[#1A1B1E]">
           Project name
         </span>
       </div>
