@@ -1,6 +1,6 @@
 import * as React from "react";
 import { AlertTriangle, Eye, EyeOff } from "lucide-react";
-import { useSignIn } from "../hooks/useSignIn";
+import { useSignIn } from "../../hooks/useSignIn";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router";
 
@@ -16,16 +16,16 @@ export default function SignInForm() {
   return (
     <div className="flex-1 flex flex-col justify-center p-7 w-full mx-auto">
       <div className="mb-8">
-        <h1 className=" font-inter font-semibold text-4xl leading-[1.3] tracking-tight">
+        <h1 className=" font-inter font-semibold text-4xl leading-[1.3] tracking-[-0.5px] text-[#1A1B1E]">
           Sign in
         </h1>
-        <p className="text-sm text-neutral-400 mt-1.5 font-medium">
+        <p className="font-normal text-[18px] mt-1.5 leading-normal tracking-[-0.5px] text-[#929296]">
           Please login to continue to the system
         </p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-5">
-        <div className="space-y-1.5">
+        <div className="space-y-3">
           <div className="relative">
             <input
               {...register("email")}
@@ -35,7 +35,7 @@ export default function SignInForm() {
               disabled={isLoading}
               aria-invalid={errors.email || errorAPI ? "true" : "false"}
               className={cn(
-                "w-full px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 bg-white border rounded-lg outline-hidden focus:ring-4 transition-all duration-200",
+                "w-full px-4 py-3  font-inter font-normal text-[18px] leading-0 tracking-[1.5] text-[#1A1B1E] placeholder:text-neutral-400 bg-white border rounded-lg outline-hidden focus:ring-4 transition-all duration-200",
                 errors.email || errorAPI
                   ? "border-red-500 focus:border-red-500 focus:ring-red-100"
                   : "border-neutral-200 focus:border-[#0066ff] focus:ring-blue-100",
@@ -44,13 +44,13 @@ export default function SignInForm() {
             />
           </div>
           {errors.email && (
-            <p className="font-sans font-semibold text-xs text-red-500 pl-1 animate-in fade-in slide-in-from-top-1 duration-200">
+            <p className="font-inter font-normal text-[18px] leading-[2%] tracking-[1.5] text-[#E53935] pl-1 animate-in fade-in slide-in-from-top-1 duration-200">
               {errors.email.message}
             </p>
           )}
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-3">
           <div className="relative">
             <input
               {...register("password")}
@@ -60,7 +60,7 @@ export default function SignInForm() {
               disabled={isLoading}
               aria-invalid={errors.password || errorAPI ? "true" : "false"}
               className={cn(
-                "w-full pl-4 pr-11 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 bg-white border rounded-lg outline-hidden focus:ring-4 transition-all duration-200",
+                "w-full pl-4 pr-11 py-3 font-inter font-normal text-[18px] leading-0 tracking-[1.5] placeholder:text-neutral-400 bg-white border rounded-lg outline-hidden focus:ring-4 transition-all duration-200",
                 errors.password || errorAPI
                   ? "border-red-500 focus:border-red-500 focus:ring-red-100"
                   : "border-neutral-200 focus:border-[#0066ff] focus:ring-blue-100",
@@ -76,14 +76,14 @@ export default function SignInForm() {
               className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-neutral-200 transition-colors"
             >
               {showPassword ? (
-                <EyeOff className="w-4 h-4" />
+                <EyeOff className="w-5 h-5" />
               ) : (
-                <Eye className="w-4 h-4" />
+                <Eye className="w-5 h-5" />
               )}
             </button>
           </div>
           {errors.password && (
-            <p className="font-sans font-semibold text-xs text-red-500 pl-1 animate-in fade-in slide-in-from-top-1 duration-200">
+            <p className="font-inter font-normal text-[18px] leading-[2%] tracking-[1.5] text-[#E53935] pl-1 animate-in fade-in slide-in-from-top-1 duration-200">
               {errors.password.message}
             </p>
           )}
@@ -99,7 +99,7 @@ export default function SignInForm() {
             />
             <span
               className={cn(
-                "text-xs font-medium text-neutral-600 group-hover:text-neutral-900 transition-colors",
+                "font-inter text-[18px] font-normal leading-normal tracking-[0.02em] text- group-hover:text-neutral-900 transition-colors",
                 isLoading ? "cursor-not-allowed" : "pointer-events-auto",
               )}
             >
@@ -110,9 +110,9 @@ export default function SignInForm() {
 
         <div className="space-y-4 pt-2">
           {errorAPI && (
-            <div className="flex items-center gap-2 text-red-500 pl-1 bg-red-50/50 p-2.5 rounded-xl border border-red-100 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex items-center gap-2 text-[#E53935] pl-1 bg-red-50/50 p-2.5 rounded-xl border border-red-100 animate-in fade-in slide-in-from-top-1 duration-200">
               <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span className="font-sans font-medium text-xs tracking-wide">
+              <span className="font-inter font-normal text-[18px] leading-0 tracking-[1.5] text-[#E53935]">
                 {errorAPI.message || "An authentication error occurred."}
               </span>
             </div>
@@ -122,7 +122,7 @@ export default function SignInForm() {
             type="submit"
             disabled={isLoading}
             className={cn(
-              "w-full flex items-center justify-center h-12   hover:bg-[#b3d1ff] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed text-white text-base leading-loose tracking-[2%] rounded-xl transition-all duration-200 focus:outline-hidden focus:ring-4 focus:ring-blue-100 cursor-pointer font-inter font-semibold",
+              "w-full flex items-center justify-center h-13   hover:bg-[#b3d1ff] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-[22px] leading-[1.2] tracking-[2%] rounded-xl transition-all duration-200 focus:outline-hidden focus:ring-4 focus:ring-blue-100 cursor-pointer font-inter",
               isLoading ? "bg-[#cce0ff]" : "bg-[rgba(11_116_250/1)]",
             )}
           >
@@ -131,8 +131,8 @@ export default function SignInForm() {
 
           <div className="text-center pt-1">
             <Link
-              to='/CMS_Project/auth/forget_password'
-              className="inline-block text-xs font-semibold text-[#0066ff] hover:underline underline-offset-4 focus:outline-hidden focus:ring-2 focus:ring-blue-200 rounded-sm px-1 py-0.5"
+              to="/auth/forget_password"
+              className="inline-block text-[18px] font-normal text-[#0B74FA] leading-normal tracking-[2%  ] hover:underline underline-offset-4 focus:outline-hidden focus:ring-2 focus:ring-blue-200 rounded-sm px-1 py-0.5"
             >
               Forgot password?
             </Link>

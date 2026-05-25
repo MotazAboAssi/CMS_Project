@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import z from "zod";
 
 interface ForgotPasswordFormProps {
+  onSendResetLink: (email: string) => void;
   isLoading?: boolean;
 }
 const forgotPasswordSchema = z.object({
@@ -18,6 +19,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export function ForgotPasswordForm({
+  onSendResetLink,
   isLoading = false,
 }: ForgotPasswordFormProps) {
   // const [email, setEmail] = React.useState<string>("");
@@ -35,9 +37,9 @@ export function ForgotPasswordForm({
     },
   });
 
-  const onSendResetLink = (email: string) => {
-    console.log(email);
-  };
+  // const onSendResetLink = (email: string) => {
+  //   console.log(email);
+  // };
   const onSubmit = (data: ForgotPasswordFormData) => {
     onSendResetLink(data.email);
   };
@@ -50,10 +52,10 @@ export function ForgotPasswordForm({
       <div className="flex-1 flex flex-col justify-center p-7 w-full mx-auto">
         {/* Form Typography Header Layout */}
         <div className="mb-8">
-          <h1 className="font-inter font-semibold text-3xl text-[rgba(26_27_30/1)] tracking-[-0.5px] leading-[1.3]">
+          <h1 className="font-inter text-[36px] font-semibold leading-[1.3] tracking-[-0.5px] text-[#1A1B1E]">
             Forgot Password?
           </h1>
-          <p className="font-inter font-normal text-[18px] text-[rgba(26_27_30/1)] tracking-normal leading-[1.6] mt-3 ">
+          <p className="font-inter text-[22px] font-normal leading-[1.6] tracking-normal text-[#929296] mt-3 ">
             Enter your email address and we'll send you a link to reset your
             password
           </p>
@@ -66,7 +68,7 @@ export function ForgotPasswordForm({
           noValidate
         >
           {/* Email Input Field */}
-          <div className="space-y-1.5">
+          <div className="space-y-4">
             <input
               {...register("email")}
               type="email"
@@ -75,14 +77,14 @@ export function ForgotPasswordForm({
               disabled={isLoading}
               aria-invalid={errors.email ? "true" : "false"}
               className={cn(
-                "w-full h-11 px-4 py-3 text-sm text-neutral-900 placeholder:text-[rgba(182_183_185/1)] bg-white border border-[#b6b7b9] rounded-lg outline-none focus:ring-4 transition-all duration-200 ",
+                "w-full h-12 px-4 py-3 font-inter font-normal text-[18px] leading-[2%] tracking-[1.5] text-[#E53935] placeholder:text-[rgba(182_183_185/1)] bg-white border border-[#b6b7b9] rounded-lg outline-none focus:ring-4 transition-all duration-200 ",
                 errors.email
                   ? "border-red-500 focus:border-red-500 focus:ring-red-100"
                   : "border-neutral-200 focus:border-[#0066ff] focus:ring-blue-100",
               )}
             />
             {errors.email && (
-              <p className="font-sans font-semibold text-xs text-red-500 pl-1 animate-in fade-in slide-in-from-top-1 duration-200">
+              <p className="font-inter font-normal text-[18px] leading-[2%] tracking-[1.5] text-[#E53935] pl-1 animate-in fade-in slide-in-from-top-1 duration-200">
                 {errors.email.message}
               </p>
             )}
@@ -93,7 +95,7 @@ export function ForgotPasswordForm({
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11.5 bg-[#0B74FA] hover:bg-[#b3d1ff] text-white font-inter font-semibold text-[18px] tracking-[2%] leading-[1.2] rounded-lg transition-all shadow-none disabled:opacity-50"
+              className="w-full h-11.5 bg-[#0B74FA] hover:bg-[#b3d1ff] text-white font-inter font-semibold text-[22px] tracking-[2%] leading-[1.2] rounded-lg transition-all shadow-none disabled:opacity-50"
             >
               Sent reset link
             </Button>
@@ -103,9 +105,9 @@ export function ForgotPasswordForm({
               <button
                 type="button"
                 onClick={onBackToLogin}
-                className="inline-flex items-center gap-1.5 font-inter font-normal tracking-[2%] leading-normal text-sm text-[#0066ff] hover:underline underline-offset-4 cursor-pointer focus:outline-none py-1 px-2"
+                className="inline-flex items-center gap-1.5 font-inter text-[18px] font-normal leading-normal tracking-[0.02em] text-center underline  decoration-0 text-[#0B74FA] hover:underline underline-offset-4 cursor-pointer focus:outline-none py-1 px-2"
               >
-                <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
+                <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
                 Back to Log in
               </button>
             </div>

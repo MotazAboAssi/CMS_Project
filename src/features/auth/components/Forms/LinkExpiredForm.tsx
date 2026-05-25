@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ArrowLeft } from "lucide-react";
 
 // Shadcn UI Button dependency
@@ -13,25 +12,25 @@ interface LinkExpiredFormProps {
 export function LinkExpiredForm({ isLoading = false }: LinkExpiredFormProps) {
   const navigate = useNavigate();
   const onBackToLogin = () => {
-    navigate("/CMS_Project/auth/login", { replace: true });
+    navigate("/authlogin", { replace: true });
   };
   const onRequestNewLink = () => {};
   return (
     <>
       {/* Container tracking matching the signature 360px grid block boundaries */}
-      <div className="flex-1 flex flex-col justify-center items-center ite p-7 w-full mx-auto">
+      <div className="flex-1 flex flex-col justify-center  p-7 w-full mx-auto">
         {/* Main Content Layout Block */}
         <div className="mb-10">
-          <h1 className="font-sans font-black text-3xl text-neutral-900 tracking-tight leading-none">
+          <h1 className="font-inter text-[36px] font-semibold leading-[1.3] tracking-[-0.5px] text-[#1A1B1E]">
             Link expired
           </h1>
 
-          <p className="text-sm text-neutral-400 mt-4 font-medium leading-relaxed">
+          <p className=" mt-4 font-inter text-[22px] font-normal leading-[1.6] tracking-normal text-[#929296]">
             This link is expired, contact your admin or{" "}
             <button
               onClick={onRequestNewLink}
               disabled={isLoading}
-              className="text-[#0066ff] font-bold hover:underline cursor-pointer inline bg-transparent p-0 border-none outline-none disabled:opacity-50"
+              className="font-inter text-[22px] font-normal leading-[1.6] tracking-normal text-[#0B74FA] underline cursor-pointer inline bg-transparent p-0 border-none outline-none disabled:opacity-50"
             >
               request a new link
             </button>
@@ -43,9 +42,9 @@ export function LinkExpiredForm({ isLoading = false }: LinkExpiredFormProps) {
           <Button
             onClick={onBackToLogin}
             disabled={isLoading}
-            className="w-full  h-12 bg-[#0066ff] hover:bg-[#0052cc] text-white font-bold text-sm rounded-xl transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full  h-13 bg-[#0066ff] hover:bg-[#0052cc] text-white font-inter text-[22px] font-semibold leading-[1.2] tracking-[0.02em] rounded-xl transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            <ArrowLeft className="w-4 h-4 stroke-[3]" />
+            <ArrowLeft className="w-5 h-5 stroke-3" />
             Back to Login
           </Button>
         </div>

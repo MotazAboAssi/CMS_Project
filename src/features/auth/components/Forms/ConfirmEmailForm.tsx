@@ -7,9 +7,8 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import type { ConfirmEmailFormProps } from "../types";
+import type { ConfirmEmailFormProps } from "../../types";
 import { useNavigate } from "react-router";
-
 
 export default function ConfirmEmailForm({
   isLoading = false,
@@ -43,31 +42,31 @@ export default function ConfirmEmailForm({
     }
   };
   const onBackToLogin = () => {
-    navigate("/CMS_Project/auth/login", { replace: true });
+    navigate("/authlogin", { replace: true });
   };
 
   return (
     <>
-      <div className="flex-1 flex flex-col justify-center p-7 w-full mx-auto">
+      <div className="flex-1 flex flex-col justify-center p-7 w-full mx-auto ">
         <div className="mb-4">
-          <h1 className="font-inter font-semibold   text-3xl text-[rgb(26_27_30/1)]  tracking-[-0.5px] leading-[1.3]">
+          <h1 className="font-inter text-[36px] font-semibold leading-[1.3] tracking-[-0.5px] text-[#1A1B1E]">
             Confirm your Email
           </h1>
-          <p className="leading-normal text-[rgb(146_146_150/1)] mt-2 font-normal font-inter text-sm">
+          <p className=" mt-2 font-inter text-[18px] font-normal leading-normal tracking-[0.02em] text-[#929296]">
             Enter the code we've sent to your email to confirm your account
           </p>
         </div>
 
         <div className="mb-13">
           {countdown > 0 ? (
-            <span className="text-sm font-inter font-normal tracking-[2%] leading-normal text-[rgba(11_116_250/1)] underline">
+            <span className="font-inter text-[18px] font-normal leading-normal tracking-[0.02em] underline underline-offset-0 decoration-0 text-[#0B74FA]">
               Resend code in {countdown} seconds
             </span>
           ) : (
             <button
               type="button"
               onClick={handleResend}
-              className="text-sm font-inter font-normal tracking-[2%] leading-normal text-[rgba(11_116_250/1)] underline cursor-pointer"
+              className="font-inter text-[18px] font-normal leading-normal tracking-[0.02em] underline underline-offset-0 decoration-0 text-[#0B74FA] cursor-pointer"
             >
               Resend verification code
             </button>
@@ -90,7 +89,7 @@ export default function ConfirmEmailForm({
                   <InputOTPSlot
                     key={index}
                     index={index}
-                    className="w-11 h-11 sm:w-12 sm:h-12 text-base sm:text-lg font-inter font-bold text-neutral-900 bg-white border border-neutral-600 rounded-xl transition-all duration-200 focus-visible:ring-4 focus-visible:ring-blue-100 focus-visible:border-[#0066ff] shadow-none"
+                    className="w-11 h-11 text-base sm:text-lg font-inter font-bold text-neutral-900 bg-white border border-[#B6B7B9] rounded-xl transition-all duration-200 focus-visible:ring-4 focus-visible:ring-blue-100 focus-visible:border-[#0066ff] shadow-none"
                   />
                 ))}
               </InputOTPGroup>
@@ -101,7 +100,7 @@ export default function ConfirmEmailForm({
             <Button
               type="submit"
               disabled={isLoading || otpValue.length < 6}
-              className="w-full h-11 bg-[rgba(11_116_250/1)] hover:bg-[#b3d1ff] text-white font-inter font-semibold text-lg tracking-[2%] leading-[1.2] rounded-lg transition-all shadow-none  disabled:pointer-events-none disabled:opacity-50"
+              className="w-full h-12 bg-[rgba(11_116_250/1)] hover:bg-[#b3d1ff] text-white font-inter text-[22px] font-semibold leading-[1.2] tracking-[0.02em] rounded-lg transition-all shadow-none  disabled:pointer-events-none disabled:opacity-50"
             >
               Confirm code
             </Button>
@@ -110,7 +109,7 @@ export default function ConfirmEmailForm({
               <button
                 type="button"
                 onClick={onBackToLogin}
-                className="inline-flex items-center gap-1.5 font-inter font-normal leading-normal tracking-[2%]  text-[rgba(11_116_250/1)] hover:underline underline-offset-4 cursor-pointer focus:outline-none py-1 px-2"
+                className="inline-flex items-center gap-1.5 font-inter text-[18px] font-normal leading-normal tracking-[0.02em] text-center underline decoration-0 text-[#0B74FA] hover:underline underline-offset-4 cursor-pointer focus:outline-none py-1 px-2"
               >
                 <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
                 Back to Log in
