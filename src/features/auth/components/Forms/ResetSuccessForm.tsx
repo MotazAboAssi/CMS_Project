@@ -25,7 +25,7 @@ export function ResetSuccessForm() {
             onClick={onBackToLogin}
             className="w-full h-13 bg-[#0066ff] hover:bg-[#0052cc] text-white font-inter text-[22px] font-semibold leading-[1.2] tracking-[0.02em] rounded-xl transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2"
           >
-            <ArrowLeft className="w-4 h-4 stroke-[3]" />
+            <ArrowLeft className="w-4 h-4 stroke-3" />
             Back to Login
           </Button>
         </div>

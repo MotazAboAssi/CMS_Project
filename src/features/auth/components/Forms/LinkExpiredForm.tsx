@@ -1,13 +1,10 @@
 import { ArrowLeft } from "lucide-react";
-
-// Shadcn UI Button dependency
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
+import type { LinkExpiredFormProps } from "../../types";
 
 // Functional Link Expired View Component
-interface LinkExpiredFormProps {
-  isLoading?: boolean;
-}
+
 
 export function LinkExpiredForm({ isLoading = false }: LinkExpiredFormProps) {
   const navigate = useNavigate();

@@ -10,7 +10,7 @@ import {
 import type { ConfirmEmailFormProps } from "../../types";
 import { useNavigate } from "react-router";
 
-export default function ConfirmEmailForm({
+export function ConfirmEmailForm({
   isLoading = false,
 }: ConfirmEmailFormProps) {
   const [otpValue, setOtpValue] = React.useState<string>("");

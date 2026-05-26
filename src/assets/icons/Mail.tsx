@@ -1,5 +1,5 @@
 
-export default function Frame({ className }: { className: string }) {
+export function MailIcon({ className }: { className: string }) {
   return (
     <svg
       width="40"

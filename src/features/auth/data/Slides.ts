@@ -22,4 +22,19 @@ export const SLIDE_ASSETS: SlideAsset[] = [
     image: image4,
     message: "Collaborative dashboards designed for team velocity",
   },
+  {
+    id: 5,
+    image: image1,
+    message: "Collaborative dashboards designed for team velocity",
+  },
+  {
+    id: 6,
+    image: image3,
+    message: "Collaborative dashboards designed for team velocity",
+  },
+  {
+    id: 7,
+    image: image2,
+    message: "Collaborative dashboards designed for team velocity",
+  },
 ];

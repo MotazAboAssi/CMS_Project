@@ -4,19 +4,9 @@ import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
-import z from "zod";
 
-interface ForgotPasswordFormProps {
-  onSendResetLink: (email: string) => void;
-  isLoading?: boolean;
-}
-const forgotPasswordSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: "Email address is required" })
-    .email({ message: "Please enter a valid email address" }),
-});
-type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+import type { ForgotPasswordFormProps } from "../../types";
+import { forgotPasswordSchema, type ForgotPasswordFormData } from "../../schemas";
 
 export function ForgotPasswordForm({
   onSendResetLink,

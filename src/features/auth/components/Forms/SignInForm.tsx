@@ -4,7 +4,7 @@ import { useSignIn } from "../../hooks/useSignIn";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router";
 
-export default function SignInForm() {
+export  function SignInForm() {
   const { form, onSubmit, isLoading, errorAPI } = useSignIn();
   const [showPassword, setShowPassword] = React.useState<boolean>(false);
 

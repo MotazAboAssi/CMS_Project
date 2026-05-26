@@ -1,4 +1,4 @@
-export default function Key({ className }: { className: string }) {
+export  function Key({ className }: { className: string }) {
   return (
     <svg
       width="112"

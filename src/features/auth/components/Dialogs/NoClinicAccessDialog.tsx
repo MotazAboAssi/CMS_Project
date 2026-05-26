@@ -1,6 +1,4 @@
 import { ArrowLeft } from "lucide-react";
-
-// Shadcn UI Dialog Core Primitives (Uses Radix Portals under the hood)
 import {
   Dialog,
   DialogContent,
@@ -9,8 +7,9 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import Key from "@/assets/icons/Key";
-import LayoutCard from "../LayoutCard";
+import {LayoutCard} from "../";
+import { Key } from "@/assets/icons";
+
 
 interface NoClinicAccessDialogProps {
   isOpen: boolean;

@@ -4,11 +4,9 @@ import { ArrowLeft } from "lucide-react";
 // Shadcn UI Button dependency
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
+import type { CheckEmailFormProps } from "../../types";
 
-// 2. Functional Check Email Feedback Component
-interface CheckEmailFormProps {
-  emailAddress?: string;
-}
+
 
 export function CheckEmailForm({
   emailAddress = "Example@gmail.com",

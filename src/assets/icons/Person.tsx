@@ -1,4 +1,4 @@
-export default function Person({ className }: { className: string }) {
+export  function Person({ className }: { className: string }) {
   return (
     <svg
       width="112"
