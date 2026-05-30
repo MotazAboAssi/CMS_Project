@@ -1,46 +1,5 @@
 import  { cn } from "@/lib/utils";
-import { Calendar, CheckCircle2, Clock, XCircle, type LucideProps } from "lucide-react";
-
-interface QuickStateType {
-  label: string;
-  count: number;
-  icon: React.ForwardRefExoticComponent<
-    Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
-  >;
-  color: string;
-  bg: string;
-}
-
-const quickState: QuickStateType[] = [
-  {
-    label: "Total appointments",
-    count: 28,
-    icon: Calendar,
-    color: "text-blue-500",
-    bg: "bg-blue-50",
-  },
-  {
-    label: "Checked In",
-    count: 12,
-    icon: CheckCircle2,
-    color: "text-green-500",
-    bg: "bg-green-50",
-  },
-  {
-    label: "No-shows",
-    count: 2,
-    icon: XCircle,
-    color: "text-red-500",
-    bg: "bg-red-50",
-  },
-  {
-    label: "Pending",
-    count: 3,
-    icon: Clock,
-    color: "text-amber-500",
-    bg: "bg-amber-50",
-  },
-];
+import { quickState } from "../../data/sideBarData";
 
 export function QuickStateSection() {
   return (

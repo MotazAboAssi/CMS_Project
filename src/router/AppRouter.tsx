@@ -2,7 +2,10 @@ import {
   WithCarouselCard,
   WithoutCarouselCard,
 } from "@/features/auth/components";
-import { AccountDeactivatedDialog, NoClinicAccessDialog } from "@/features/auth/components/Dialogs";
+import {
+  AccountDeactivatedDialog,
+  NoClinicAccessDialog,
+} from "@/features/auth/components/Dialogs";
 import {
   SignInForm,
   ConfirmEmailForm,
@@ -12,6 +15,7 @@ import {
   ResetSuccessForm,
   ForgotPasswordForm,
 } from "@/features/auth/components/Forms";
+import DashboardPage from "@/features/dashboardAssitant";
 import React from "react";
 import { Routes, Route, useNavigate } from "react-router";
 
@@ -32,7 +36,7 @@ export default function AppRouter() {
         <Route path="reset_success" element={<ResetSuccessForm />} />
         <Route path="*" element={<h1>Not Found Page</h1>} />
       </Route>
-      <Route path="test" />
+      <Route path="test" element={<DashboardPage />} />
       <Route path="*" element={<h1>Not Found Page</h1>} />
     </Routes>
   );
