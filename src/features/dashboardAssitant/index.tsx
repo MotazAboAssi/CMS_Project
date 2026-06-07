@@ -1,5 +1,3 @@
-// src/pages/dashboard/page.tsx
-import * as React from "react";
 import { Sidebar } from "./components/sidebar/main";
 import { Header } from "./components/header/main";
 import { ScheduleGrid } from "./components/SchedualeGrid/main";
