@@ -1,24 +1,23 @@
 import { cn } from "@/lib/utils";
-import {
-  APPOINTMENTS,
-  SLOT_HEIGHT,
-  DOCTOR_COL_WIDTH,
-} from "../../data/scheduleGrid";
+import { SLOT_HEIGHT, DOCTOR_COL_WIDTH } from "../../data/scheduleGrid";
 import { useHandleSelection } from "../../hooks";
-import type { DoctorType } from "../../types";
 import { CellsLayer, ExistingBooked, PersistentSelectionArea } from ".";
+import type { DoctorWithApts } from "./DNDGrid";
+
+interface DoctorsColumnLayoutProps {
+  doctors: DoctorWithApts[];
+  overSlotInfo: { docId: string; slotIdx: number; top: number; height: number } | null;
+}
 
 export function DoctorsColumnLayout({
   doctors,
-}: {
-  doctors: DoctorType[];
-}): React.ReactNode {
+  overSlotInfo,
+}: DoctorsColumnLayoutProps): React.ReactNode {
   const selection = useHandleSelection((state) => state.selection);
 
   return doctors.map((doctor) => {
-    const columnAppointments = APPOINTMENTS.filter(
-      (a) => a.docId === doctor.id,
-    );
+    // جلب مواعيد الطبيب مباشرة من الـ State لضمان التزامن
+    const columnAppointments = doctor.appointments || doctor.columnAppointments || [];
     const hasSelectionInColumn = selection?.docId === doctor.id;
 
     let selectionTop = 0;
@@ -35,21 +34,23 @@ export function DoctorsColumnLayout({
         key={doctor.id}
         className={cn("h-full relative z-10", DOCTOR_COL_WIDTH)}
       >
-        {/* Cells Layer */}
         <CellsLayer
           columnAppointments={columnAppointments}
           idDoctor={doctor.id}
         />
 
-        {/* Persistent Selection Area overlay container */}
         <PersistentSelectionArea
           hasSelectionInColumn={hasSelectionInColumn}
           selectionHeight={selectionHeight}
           selectionTop={selectionTop}
         />
 
-        {/* Existing booked cards */}
-        <ExistingBooked columnAppointments={columnAppointments} />
+        {/* تمرير المواعيد والـ overSlotInfo لـ ExistingBooked */}
+        <ExistingBooked 
+          columnAppointments={columnAppointments} 
+          docId={doctor.id} 
+          overSlotInfo={overSlotInfo} 
+        />
       </div>
     );
   });

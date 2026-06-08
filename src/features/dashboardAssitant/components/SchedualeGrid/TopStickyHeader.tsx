@@ -2,14 +2,14 @@ import {
   SortableContext,
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import type { DoctorType } from "../../types";
 import { cn } from "@/lib/utils";
 import { DOCTOR_COL_WIDTH } from "../../data/scheduleGrid";
 import { useEditeMode } from "../../hooks";
 import { SortableDoctorHeader } from ".";
+import type { DoctorWithApts } from "./DNDGrid";
 
 
-export function TopStickyHeader({ doctors }: { doctors: DoctorType[] }) {
+export function TopStickyHeader({ doctors }: { doctors: DoctorWithApts[] }) {
   const isEditMode = useEditeMode((state) => state.isEditMode);
   return (
     <div className="sticky top-0 z-40 flex bg-neutral-50 border-b border-neutral-200 divide-x divide-neutral-200">

@@ -1,8 +1,8 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { DoctorType } from "../../types";
 import { cn } from "@/lib/utils";
-import { GripVertical } from "lucide-react"; // استيراد أيقونة المقبض السداسي
+import { GripVertical } from "lucide-react"; 
+import type { DoctorWithApts } from "./DNDGrid";
 
 export function SortableDoctorHeader({
   id,
@@ -10,7 +10,7 @@ export function SortableDoctorHeader({
   disabled,
 }: {
   id: string;
-  doctor: DoctorType;
+  doctor: DoctorWithApts;
   disabled: boolean;
 }) {
   const {
@@ -22,15 +22,21 @@ export function SortableDoctorHeader({
     isDragging,
   } = useSortable({ id, disabled });
   
-  const style = { transform: CSS.Transform.toString(transform), transition };
+  // تعديل 1: استخدام CSS.Translate لمنع التشوه وقفزات الإحداثيات الأفقية
+  // وتمرير الـ transition فقط عندما لا نكون في حالة سحب نشطة لمنع الـ Lag
+  const style = { 
+    transform: CSS.Translate.toString(transform), 
+    transition: isDragging ? undefined : transition 
+  };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "bg-white p-3.5 flex items-center justify-between transition-all w-full h-16",
-        isDragging && "shadow-lg bg-neutral-50/90 z-50 relative opacity-90",
+        // تعديل 2: استبدال transition-all بـ transition-colors لمنع Tailwind من تحريك الـ transform برمجياً
+        "bg-white p-3.5 flex items-center justify-between transition-colors duration-200 w-full h-16 box-border",
+        isDragging && "shadow-xl bg-neutral-50/90 z-50 relative opacity-90 border border-neutral-200 rounded-xl",
         !disabled && "cursor-grab active:cursor-grabbing hover:bg-neutral-50/80",
       )}
     >
@@ -54,9 +60,9 @@ export function SortableDoctorHeader({
           </div>
         </div>
 
-        {/* إضافة مقبض السحب على اليمين عند تفعيل الـ Edit Mode (عندما يكون disabled يساوي false) */}
+        {/* مقبض السحب الأنيق المعتمد على الـ Edit Mode */}
         {!disabled && (
-          <GripVertical className="w-4 h-4 text-neutral-400 shrink-0 ml-1.5" />
+          <GripVertical className="w-4 h-4 text-neutral-400 shrink-0 ml-1.5 opacity-70 hover:opacity-100 transition-opacity" />
         )}
       </div>
     </div>

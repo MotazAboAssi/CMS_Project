@@ -7,7 +7,7 @@ export function InformationPanel() {
   const [showLegend, setShowLegend] = React.useState(true);
 
   return (
-    <div className="absolute bottom-4 right-4 z-50 flex flex-col items-end">
+    <div className="absolute bottom-4 right-4 z-40 flex flex-col items-end">
       <button
         onClick={() => setShowLegend(!showLegend)}
         className="h-9 px-4 bg-white border border-neutral-200 rounded-xl shadow-md flex items-center gap-2 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition-colors cursor-pointer"
