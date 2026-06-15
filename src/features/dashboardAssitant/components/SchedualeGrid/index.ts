@@ -2,7 +2,7 @@ export { BackgroundGridLine } from "./BackgroundGridLine";
 export { CellsLayer } from "./CellsLayer";
 export { DNDGrid } from "./DNDGrid";
 export { DoctorsColumnLayout } from "./DoctorsColumnLayout";
-export { ExistingBooked } from "./ExistingBooked";
+export { ExistingBooked } from "./Appointement/ExistingBooked";
 export { InformationPanel } from "./InformationPanel";
 export { PersistentSelectionArea } from "./PersistentSelectionArea";
 export { RedTimeBox } from "./RedTimeBox";
