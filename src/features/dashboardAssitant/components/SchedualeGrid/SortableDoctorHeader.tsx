@@ -2,7 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 import { GripVertical } from "lucide-react"; 
-import type { DoctorWithApts } from "./DNDGrid";
+import type { DoctorWithApts } from "./DNDGrid/DNDGrid";
 
 export function SortableDoctorHeader({
   id,

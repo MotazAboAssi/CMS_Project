@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { SLOT_HEIGHT, DOCTOR_COL_WIDTH } from "../../data/scheduleGrid";
 import { useHandleSelection } from "../../hooks";
 import { CellsLayer, ExistingBooked, PersistentSelectionArea } from ".";
-import type { DoctorWithApts } from "./DNDGrid";
+import type { DoctorWithApts } from "./DNDGrid/DNDGrid";
 
 interface DoctorsColumnLayoutProps {
   doctors: DoctorWithApts[];

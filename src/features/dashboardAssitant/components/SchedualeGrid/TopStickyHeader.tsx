@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { DOCTOR_COL_WIDTH } from "../../data/scheduleGrid";
 import { useEditeMode } from "../../hooks";
 import { SortableDoctorHeader } from ".";
-import type { DoctorWithApts } from "./DNDGrid";
+import type { DoctorWithApts } from "./DNDGrid/DNDGrid";
 
 
 export function TopStickyHeader({ doctors }: { doctors: DoctorWithApts[] }) {
