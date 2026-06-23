@@ -49,7 +49,6 @@ export function AppointmentCard({
   };
 
   // معالجة النصوص لاستخراج الاسم ونوع الكشف بشكل ديناميكي لتفادي الهاردكود
-
   const appointement: {
     patientName: string;
     visitType: string;
@@ -74,6 +73,18 @@ export function AppointmentCard({
       ref={setNodeRef}
       {...(!isDragDisabled ? listeners : {})}
       {...attributes}
+      onDoubleClick={(e) => {
+        if (isEditMode) {
+          e.preventDefault();
+          e.stopPropagation();
+          // يرسل الحدث مباشرة لمنظم الشبكة المركزي لعرض القائمة المنبثقة
+          window.dispatchEvent(
+            new CustomEvent("open-appointment-menu", {
+              detail: { appointment: apt, x: e.clientX, y: e.clientY },
+            })
+          );
+        }
+      }}
       style={{
         top: topOffset + 3,
         height: cardHeight - 6,

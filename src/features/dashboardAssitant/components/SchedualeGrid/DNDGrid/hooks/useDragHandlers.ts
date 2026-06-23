@@ -15,7 +15,7 @@ import {
 import { useEditeMode } from "../../../../hooks";
 import { formatMinutesToTime } from "../utils/timeFormatters";
 import { useCurrentTime } from "./useCurrentTime";
-import type { DoctorWithApts, DragDataPayload } from "@/features/dashboardAssitant/types";
+import type { DoctorWithApts, DragDataPayload, ExtendedAppointmentType } from "@/features/dashboardAssitant/types";
 import type { OverSlotInfo, ToastInfo, ActiveDragType } from "../types/dragTypes";
 
 export function useDragHandlers() {
@@ -42,6 +42,40 @@ export function useDragHandlers() {
 
   const currentMinutesSinceMidnight = useCurrentTime();
 
+  // New handler for modifying appointments directly via context menu actions
+  const updateAppointment = useCallback(
+    (updatedApt: ExtendedAppointmentType) => {
+      // 1. Snapshot full state for robust Undo tracking
+      setSnapshotDoctors(JSON.parse(JSON.stringify(doctors)));
+      setIsToastOpen(false);
+
+      // 2. Perform cross-doctor atomic immutable state swap
+      setDoctors((prev) =>
+        prev.map((doc) => {
+          const filteredApts = (doc.appointments || []).filter(
+            (a) => a && a.id !== updatedApt.id
+          );
+
+          if (doc.id === updatedApt.docId) {
+            filteredApts.push(updatedApt);
+          }
+
+          return { ...doc, appointments: filteredApts };
+        })
+      );
+
+      // 3. Trigger corresponding operational success toast
+      const duration = updatedApt.end - updatedApt.start;
+      const titleString = updatedApt.title || "Appointment";
+      setToastInfo({
+        patientName: titleString.split(" - ")[0],
+        newTimeLabel: formatMinutesToTime(updatedApt.start, duration),
+      });
+      setIsToastOpen(true);
+    },
+    [doctors]
+  );
+
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
       if (!isEditMode) return;
@@ -49,7 +83,6 @@ export function useDragHandlers() {
       const { active } = event;
       const currentData = active.data.current as DragDataPayload | undefined;
 
-      // Block dragging past appointments
       if (currentData?.type === "appointment" && currentData.appointmentData) {
         const absoluteAptEndMinutes =
           START_TIME_MINUTES + currentData.appointmentData.end;
@@ -107,7 +140,6 @@ export function useDragHandlers() {
 
       if (!over || !isEditMode) return;
 
-      // Doctor reorder
       if (active.data.current?.type === "doctor" || active.data.current?.sortable) {
         if (active.id !== over.id) {
           setDoctors((items) => {
@@ -119,7 +151,6 @@ export function useDragHandlers() {
         return;
       }
 
-      // Appointment drop
       if (activeType === "appointment" && over.data.current?.type === "slot") {
         const targetDoctorId = over.data.current.idDoctor;
         const targetSlotIdx = over.data.current.slotIdx;
@@ -194,5 +225,6 @@ export function useDragHandlers() {
     handleDragEnd,
     handleUndoAction,
     closeToast,
+    updateAppointment, // Exporting to be called cleanly by context menu
   };
 }

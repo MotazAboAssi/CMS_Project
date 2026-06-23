@@ -18,10 +18,11 @@ import {
   TimeColumn,
   TopStickyHeader,
 } from "..";
-import { AppointmentUpdateToast } from "../AppointmentUpdateToast";
 import { DragOverlayCard } from "./DragOverlayCard";
 import { useDragHandlers } from "./hooks/useDragHandlers";
 import { gridCollisionStrategy } from ".";
+import { AppointmentUpdateToast } from "../AppointmentUpdateToast";
+import { AppointmentContextMenu } from "./AppointmentContextMenu";
 
 export function DNDGrid() {
   const {
@@ -38,6 +39,7 @@ export function DNDGrid() {
     handleDragEnd,
     handleUndoAction,
     closeToast,
+    updateAppointment, // Destructured state mutation handler
   } = useDragHandlers();
 
   const handleSelectionCommit = useHandleSelection(
@@ -84,6 +86,12 @@ export function DNDGrid() {
           <DragOverlayCard data={activeData} height={overlayMeta.cardHeight} />
         ) : null}
       </DragOverlay>
+
+      {/* Shared Global Context Menu Container */}
+      <AppointmentContextMenu 
+        doctors={doctors} 
+        onExecuteAction={updateAppointment} 
+      />
 
       <AppointmentUpdateToast
         isOpen={isToastOpen}
