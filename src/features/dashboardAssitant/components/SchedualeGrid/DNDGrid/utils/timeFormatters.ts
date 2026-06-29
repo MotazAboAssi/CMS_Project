@@ -22,3 +22,21 @@ export const formatDisplayTimeRange = (
 ): string => {
   return `${formatTime(START_TIME_MINUTES + startMins)} - ${formatTime(START_TIME_MINUTES + endMins)}`;
 };
+
+export function formatMinutesToAMPM(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const displayHour = hours % 12 === 0 ? 12 : hours % 12;
+  return `${String(displayHour).padStart(2, "0")}:${String(mins).padStart(2, "0")} ${ampm}`;
+}
+
+export function formatFullLocalDate(date: Date | null): string {
+  if (!date) return "";
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}

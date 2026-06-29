@@ -1,6 +1,9 @@
+// useHandleSelection.ts
 import { create } from "zustand";
 import type { SelectionType } from "../types";
 import { APPOINTMENTS, ROW_MINUTES } from "../data/scheduleGrid";
+// 1️⃣ استيراد هوك الـ Wizard لفتحه عند الحاجة
+import { useWizardDrawer } from "./useWizardDrawer";
 
 interface HandleSelectionState {
   selection: SelectionType;
@@ -8,7 +11,6 @@ interface HandleSelectionState {
   handleKeyDown: (e: KeyboardEvent) => void;
   handleSelectionCommit: () => void;
   handleCreateAppointment: (e: React.MouseEvent) => void;
-  // Fix 1: Updated signature to match your implementation parameters
   onMouseEnter: (params: { idDoctor: string; slotIdx: number }) => void;
   onMouseDown: (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
@@ -33,15 +35,15 @@ export const useHandleSelection = create<HandleSelectionState>((set) => {
     isSelecting: false,
 
     handleKeyDown: (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        set({ selection: null, isSelecting: false });
-      }
+      if (e.key === "Escape") set({ selection: null, isSelecting: false });
     },
 
+    // 2️⃣ عند إفلات الفأرة: نكتفي بإنهاء حالة السحب فقط (لتظل المنطقة والزر الأزرق ظاهرين)
     handleSelectionCommit: () => {
       set({ isSelecting: false });
     },
 
+    // 3️⃣ عند الضغط الفعلي على زر New Appointment الأزرق داخل المساحة
     handleCreateAppointment: (e: React.MouseEvent) => {
       e.stopPropagation();
 
@@ -51,35 +53,33 @@ export const useHandleSelection = create<HandleSelectionState>((set) => {
             state.selection.startSlot,
             state.selection.endSlot,
           );
-          const maxSlot = Math.max(
-            state.selection.startSlot,
-            state.selection.endSlot,
-          );
-          const totalParts = maxSlot - minSlot + 1;
+          // const maxSlot = Math.max(
+          //   state.selection.startSlot,
+          //   state.selection.endSlot,
+          // );
 
-          console.log(
-            `Creating appointment for: ${state.selection.docId}, starting cell: ${minSlot}, duration slots: ${totalParts}`,
-          );
-
+          // // حساب المدة بناءً على عدد الخلايا المحددة (كل خلية = 15 دقيقة)
+          // const duration = (maxSlot - minSlot + 1) * 15;
+          // منطق مقترح داخل handleCreateAppointment
+          const duration = (Math.abs(state.selection.endSlot - state.selection.startSlot) + 1) * 15;
+         
+          useWizardDrawer.getState().onOpenNewAppointment({
+            doctorId: state.selection.docId,
+            timeSlot: minSlot * ROW_MINUTES,
+            duration : duration, // إرسال المدة المحسوبة
+          });
+          // تحديث قيمة duration في الـ Wizard لاحقاً عبر initialData
           return { selection: null };
         }
-
         return {};
       });
     },
 
-    onMouseDown: (
-      e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-      { idDoctor, isEditMode, slotIdx },
-    ) => {
+    onMouseDown: (e, { idDoctor, isEditMode, slotIdx }) => {
       if (isEditMode || e.button !== 0) return;
       set({
         isSelecting: true,
-        selection: {
-          docId: idDoctor,
-          startSlot: slotIdx,
-          endSlot: slotIdx,
-        },
+        selection: { docId: idDoctor, startSlot: slotIdx, endSlot: slotIdx },
       });
     },
 
@@ -89,26 +89,19 @@ export const useHandleSelection = create<HandleSelectionState>((set) => {
           !state.isSelecting ||
           !state.selection ||
           state.selection.docId !== idDoctor
-        ) {
+        )
           return {};
-        }
 
         const potentialMinSlot = Math.min(state.selection.startSlot, slotIdx);
         const potentialMaxSlot = Math.max(state.selection.startSlot, slotIdx);
-
         const targetStartMinutes = potentialMinSlot * ROW_MINUTES;
         const targetEndMinutes = (potentialMaxSlot + 1) * ROW_MINUTES;
 
-        if (!isTimeRangeOccupied(idDoctor, targetStartMinutes, targetEndMinutes)) {
-          // Fix 2: Return the state mutations explicitly instead of calling a nested set()
-          return {
-            selection: {
-              ...state.selection,
-              endSlot: slotIdx,
-            },
-          };
+        if (
+          !isTimeRangeOccupied(idDoctor, targetStartMinutes, targetEndMinutes)
+        ) {
+          return { selection: { ...state.selection, endSlot: slotIdx } };
         }
-        
         return {};
       }),
   };

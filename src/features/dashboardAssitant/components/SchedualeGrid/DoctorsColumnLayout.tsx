@@ -1,12 +1,20 @@
 import { cn } from "@/lib/utils";
-import { SLOT_HEIGHT, DOCTOR_COL_WIDTH } from "../../data/scheduleGrid";
+import {
+  SLOT_HEIGHT,
+  DOCTOR_COL_WIDTH,
+} from "../../data/scheduleGrid";
 import { useHandleSelection } from "../../hooks";
 import { CellsLayer, ExistingBooked, PersistentSelectionArea } from ".";
 import type { DoctorWithApts } from "../../types";
 
 interface DoctorsColumnLayoutProps {
   doctors: DoctorWithApts[];
-  overSlotInfo: { docId: string; slotIdx: number; top: number; height: number } | null;
+  overSlotInfo: {
+    docId: string;
+    slotIdx: number;
+    top: number;
+    height: number;
+  } | null;
 }
 
 export function DoctorsColumnLayout({
@@ -17,7 +25,8 @@ export function DoctorsColumnLayout({
 
   return doctors.map((doctor) => {
     // جلب مواعيد الطبيب مباشرة من الـ State لضمان التزامن
-    const columnAppointments = doctor.appointments || doctor.columnAppointments || [];
+    const columnAppointments =
+      doctor.appointments || doctor.columnAppointments || [];
     const hasSelectionInColumn = selection?.docId === doctor.id;
 
     let selectionTop = 0;
@@ -34,22 +43,24 @@ export function DoctorsColumnLayout({
         key={doctor.id}
         className={cn("h-full relative z-10", DOCTOR_COL_WIDTH)}
       >
+        {/* طبقة الخلايا الزمنية الفارغة */}
         <CellsLayer
           columnAppointments={columnAppointments}
           idDoctor={doctor.id}
         />
 
+        {/* مساحة التحديد المستمر للـ Dragging */}
         <PersistentSelectionArea
           hasSelectionInColumn={hasSelectionInColumn}
           selectionHeight={selectionHeight}
           selectionTop={selectionTop}
         />
 
-        {/* تمرير المواعيد والـ overSlotInfo لـ ExistingBooked */}
-        <ExistingBooked 
-          columnAppointments={columnAppointments} 
-          docId={doctor.id} 
-          overSlotInfo={overSlotInfo} 
+        {/* المواعيد المحجوزة الحالية وتأثير الإسقاط */}
+        <ExistingBooked
+          columnAppointments={columnAppointments}
+          docId={doctor.id}
+          overSlotInfo={overSlotInfo}
         />
       </div>
     );

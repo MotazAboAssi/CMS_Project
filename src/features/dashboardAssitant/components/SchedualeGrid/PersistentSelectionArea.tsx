@@ -33,6 +33,6 @@ export function PersistentSelectionArea({
           <span>New Appointment</span>
         </button>
       </div>
-    )
+    ) 
   );
 }

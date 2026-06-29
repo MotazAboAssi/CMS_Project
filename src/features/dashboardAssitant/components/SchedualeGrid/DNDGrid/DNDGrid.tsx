@@ -6,9 +6,11 @@ import {
   useSensors,
   DragOverlay,
 } from "@dnd-kit/core";
-import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
-import { TOTAL_SLOTS } from "../../../data/scheduleGrid";
 import { useHandleSelection } from "../../../hooks";
 
 import {
@@ -23,6 +25,7 @@ import { useDragHandlers } from "./hooks/useDragHandlers";
 import { gridCollisionStrategy } from ".";
 import { AppointmentUpdateToast } from "../AppointmentUpdateToast";
 import { AppointmentContextMenu } from "./AppointmentContextMenu";
+import { AppointmentWizardDrawer } from "@/features/dashboardAssitant/CreateAppointmentWizard/AppointmentWizardDrawer";
 
 export function DNDGrid() {
   const {
@@ -40,15 +43,16 @@ export function DNDGrid() {
     handleUndoAction,
     closeToast,
     updateAppointment, // Destructured state mutation handler
+    addAppointment,
   } = useDragHandlers();
 
   const handleSelectionCommit = useHandleSelection(
-    (state) => state.handleSelectionCommit
+    (state) => state.handleSelectionCommit,
   );
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor),
   );
 
   return (
@@ -70,11 +74,14 @@ export function DNDGrid() {
               <TimeColumn />
               <div
                 className="flex-1 flex divide-x divide-neutral-200 relative bg-white"
-                style={{ height: TOTAL_SLOTS * 80 }} // SLOT_HEIGHT = 80
+                // style={{ height: TOTAL_SLOTS * 80 }} // SLOT_HEIGHT = 80
               >
                 <BackgroundGridLine />
                 <RedTimeLine />
-                <DoctorsColumnLayout doctors={doctors} overSlotInfo={overSlotInfo} />
+                <DoctorsColumnLayout
+                  doctors={doctors}
+                  overSlotInfo={overSlotInfo}
+                />
               </div>
             </div>
           </SortableContext>
@@ -88,9 +95,9 @@ export function DNDGrid() {
       </DragOverlay>
 
       {/* Shared Global Context Menu Container */}
-      <AppointmentContextMenu 
-        doctors={doctors} 
-        onExecuteAction={updateAppointment} 
+      <AppointmentContextMenu
+        doctors={doctors}
+        onExecuteAction={updateAppointment}
       />
 
       <AppointmentUpdateToast
@@ -100,6 +107,12 @@ export function DNDGrid() {
         onClose={closeToast}
         onUndo={handleUndoAction}
       />
+      <AppointmentWizardDrawer
+        doctors={doctors}
+        onExecuteCreation={addAppointment}
+      />
+      
+      
     </DndContext>
   );
 }

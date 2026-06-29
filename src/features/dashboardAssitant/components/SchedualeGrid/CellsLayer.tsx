@@ -1,5 +1,6 @@
 import { TOTAL_SLOTS, ROW_MINUTES, SLOT_HEIGHT } from "../../data/scheduleGrid";
 import { useEditeMode, useHandleSelection } from "../../hooks";
+import { useWizardDrawer } from "../../hooks/useWizardDrawer";
 import type { ColumnAppointmentsType } from "../../types";
 import { useDroppable } from "@dnd-kit/core";
 
@@ -26,6 +27,11 @@ function GridCell({
 }: GridCellProps) {
   const slotMinutesStart = slotIdx * ROW_MINUTES;
 
+  // جلب دالة فتح موعد جديد من الـ Zustand Store
+  // const onOpenNewAppointment = useWizardDrawer(
+  //   (state) => state.onOpenNewAppointment,
+  // );
+
   const { setNodeRef, isOver, active } = useDroppable({
     id: `slot-${idDoctor}-${slotIdx}`,
     data: {
@@ -39,9 +45,8 @@ function GridCell({
 
   if (isOccupied) return <div style={{ height: SLOT_HEIGHT }} />;
 
-  const isValidIncomingType =
-    active?.data.current?.type === "appointment" ||
-    active?.data.current?.type === "pending_request";
+  const isValidIncomingType = active?.data.current?.type === "appointment";
+  // ||    active?.data.current?.type === "pending_request";
 
   return (
     <div
@@ -49,6 +54,13 @@ function GridCell({
       style={{ height: SLOT_HEIGHT }}
       onMouseDown={(e) => onMouseDown(e, { idDoctor, isEditMode, slotIdx })}
       onMouseEnter={() => onMouseEnter({ idDoctor, slotIdx })}
+      // onClick={() =>
+      //   onOpenNewAppointment({
+      //     doctorId: idDoctor,
+      //     timeSlot: slotIdx * ROW_MINUTES,
+      //     treatmentId : "t1"
+      //   })
+      // }
       className="w-full h-full relative group transition-colors duration-150 cursor-crosshair border-b border-transparent"
     >
       {isOver && isEditMode && isValidIncomingType && (

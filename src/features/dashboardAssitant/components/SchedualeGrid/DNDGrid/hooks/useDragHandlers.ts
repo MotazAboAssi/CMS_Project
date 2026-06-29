@@ -15,7 +15,7 @@ import {
 import { useEditeMode } from "../../../../hooks";
 import { formatMinutesToTime } from "../utils/timeFormatters";
 import { useCurrentTime } from "./useCurrentTime";
-import type { DoctorWithApts, DragDataPayload, ExtendedAppointmentType } from "@/features/dashboardAssitant/types";
+import type { ColumnAppointmentsType, DoctorWithApts, DragDataPayload, ExtendedAppointmentType } from "@/features/dashboardAssitant/types";
 import type { OverSlotInfo, ToastInfo, ActiveDragType } from "../types/dragTypes";
 
 export function useDragHandlers() {
@@ -57,7 +57,7 @@ export function useDragHandlers() {
           );
 
           if (doc.id === updatedApt.docId) {
-            filteredApts.push(updatedApt);
+            filteredApts.push(updatedApt as ColumnAppointmentsType);
           }
 
           return { ...doc, appointments: filteredApts };
@@ -210,21 +210,38 @@ export function useDragHandlers() {
       duration,
     };
   }, [activeData]);
+  // Inside useDragHandlers.ts — add this handler function:
+const addAppointment = useCallback((newApt: ColumnAppointmentsType) => {
+  setDoctors((prevDoctors) =>
+    prevDoctors.map((doc) => {
+      if (doc.id === newApt.docId) {
+        return {
+          ...doc,
+          appointments: [...(doc.appointments || []), newApt],
+        };
+      }
+      return doc;
+    })
+  );
+}, []);
 
-  return {
-    doctors,
-    activeId,
-    activeType,
-    activeData,
-    overSlotInfo,
-    isToastOpen,
-    toastInfo,
-    overlayMeta,
-    handleDragStart,
-    handleDragOver,
-    handleDragEnd,
-    handleUndoAction,
-    closeToast,
-    updateAppointment, // Exporting to be called cleanly by context menu
-  };
+// Expose it at the bottom return block of your hook:
+return {
+  doctors,
+  activeId,
+  activeType,
+  activeData,
+  overSlotInfo,
+  isToastOpen,
+  toastInfo,
+  overlayMeta,
+  handleDragStart,
+  handleDragOver,
+  handleDragEnd,
+  handleUndoAction,
+  closeToast,
+  updateAppointment,
+  addAppointment, // ✅ Exported here
+};
+
 }

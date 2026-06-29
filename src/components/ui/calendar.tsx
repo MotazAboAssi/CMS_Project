@@ -68,7 +68,12 @@ function Calendar({
   }
 
   return (
-    <div className="p-0 bg-white rounded-lg overflow-hidden shadow-2xl border w-[290px] select-none text-direction-ltr">
+    <div className={
+      cn(
+        "p-0 bg-white rounded-lg overflow-hidden shadow-2xl border w-[290px] select-none text-direction-ltr",
+        className
+      )
+    }>
       
       {/* 1. الشريط العلوي الأزرق (Blue Header Banner) */}
       <div className="bg-[#0066ff] px-5 py-4 text-white flex flex-col justify-start items-start gap-0.5">
