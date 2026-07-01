@@ -1,13 +1,9 @@
-
 import type { ExistingBookedProps } from "@/features/dashboardAssitant/types";
-import {
-  ROW_MINUTES,
-  SLOT_HEIGHT,
-} from "../../../data/scheduleGrid";
-import { useEditeMode, useRedLine } from "../../../hooks"; // استدعاء الهوكس المتزامنة بدقة
+import { ROW_MINUTES, SLOT_HEIGHT } from "../../../data/scheduleGrid";
+import { useEditeMode, useRedLine } from "../../../hooks";
 import { AppointmentCard } from ".";
-
-
+import { useGlobalConflictStore } from "@/features/dashboardAssitant/hooks/useGlobalConflictStore";
+// 🚀 استهلاك متجر التضاربات لمنع تعتيم العناصر المتنازعة
 
 export function ExistingBooked({
   columnAppointments,
@@ -21,6 +17,10 @@ export function ExistingBooked({
   const currentMinutesSinceGridStart =
     (timeLineTop / SLOT_HEIGHT) * ROW_MINUTES;
 
+  const conflictPayload = useGlobalConflictStore(
+    (state) => state.conflictPayload,
+  );
+  const isThisColumnConflicted = conflictPayload?.targetDoctorId === docId;
   return (
     <>
       {/* التظليل التوقعي السلس عند تحليق بطاقة السحب فوق خانة طبيب فارغة */}
@@ -34,14 +34,31 @@ export function ExistingBooked({
         />
       )}
 
-      {columnAppointments.map((apt) => (
-        <AppointmentCard
-          key={apt.id}
-          apt={apt}
-          isEditMode={isEditMode}
-          currentMinutesSinceGridStart={currentMinutesSinceGridStart}
-        />
-      ))}
+      {columnAppointments.map((apt) => {
+        // حماية تامة من التعتيم إذا كان الكرت طرفاً في النزاع
+        const isCardConflicting =
+          isThisColumnConflicted &&
+          conflictPayload!.conflictingItems.some(
+            (c) => c.appointmentId === apt.id,
+          );
+
+        return (
+          <div
+            key={apt.id}
+            className="transition-all duration-200"
+            style={{
+              opacity: conflictPayload && !isCardConflicting ? 0.35 : 1,
+              transform: isCardConflicting ? "scale(1.01)" : "none",
+            }}
+          >
+            <AppointmentCard
+              apt={apt}
+              isEditMode={isEditMode}
+              currentMinutesSinceGridStart={currentMinutesSinceGridStart}
+            />
+          </div>
+        );
+      })}
     </>
   );
 }

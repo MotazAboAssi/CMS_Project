@@ -26,6 +26,8 @@ import { gridCollisionStrategy } from ".";
 import { AppointmentUpdateToast } from "../AppointmentUpdateToast";
 import { AppointmentContextMenu } from "./AppointmentContextMenu";
 import { AppointmentWizardDrawer } from "@/features/dashboardAssitant/CreateAppointmentWizard/AppointmentWizardDrawer";
+import { ConflictDrawer } from "../ConflictDrawer";
+// 🚀 استيراد درج التضاربات الجديد
 
 export function DNDGrid() {
   const {
@@ -44,6 +46,8 @@ export function DNDGrid() {
     closeToast,
     updateAppointment, // Destructured state mutation handler
     addAppointment,
+    confirmPendingMove,
+    cancelPendingMove,
   } = useDragHandlers();
 
   const handleSelectionCommit = useHandleSelection(
@@ -111,8 +115,12 @@ export function DNDGrid() {
         doctors={doctors}
         onExecuteCreation={addAppointment}
       />
-      
-      
+
+      {/* 🚀 حقن درج النزاعات التفاعلي في قاع المكون المستقر */}
+      <ConflictDrawer
+        onConfirm={confirmPendingMove}
+        onCancel={cancelPendingMove}
+      />
     </DndContext>
   );
 }

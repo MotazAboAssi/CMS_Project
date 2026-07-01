@@ -1,4 +1,5 @@
 export interface ColumnAppointmentsType {
+  phone: string;
   id: string;
   docId: string;
   title: string;

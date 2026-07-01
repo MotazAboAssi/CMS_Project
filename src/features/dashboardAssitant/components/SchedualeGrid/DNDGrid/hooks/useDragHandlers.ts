@@ -8,31 +8,61 @@ import { arrayMove } from "@dnd-kit/sortable";
 import {
   INITIAL_DOCTORS,
   SLOT_HEIGHT,
-  START_TIME_MINUTES,
   ROW_MINUTES,
   APPOINTMENTS,
 } from "../../../../data/scheduleGrid";
 import { useEditeMode } from "../../../../hooks";
 import { formatMinutesToTime } from "../utils/timeFormatters";
-import { useCurrentTime } from "./useCurrentTime";
-import type { ColumnAppointmentsType, DoctorWithApts, DragDataPayload, ExtendedAppointmentType } from "@/features/dashboardAssitant/types";
-import type { OverSlotInfo, ToastInfo, ActiveDragType } from "../types/dragTypes";
+// import { useCurrentTime } from "./useCurrentTime";
+import type {
+  ColumnAppointmentsType,
+  DoctorWithApts,
+  DragDataPayload,
+  ExtendedAppointmentType,
+} from "@/features/dashboardAssitant/types";
+import type {
+  OverSlotInfo,
+  ToastInfo,
+  ActiveDragType,
+} from "../types/dragTypes";
+import { calculatePriorityScore, useGlobalConflictStore, type ConflictingItem } from "@/features/dashboardAssitant/hooks/useGlobalConflictStore";
+// 🚀 استيراد مخزن النزاعات لإشعاره فورا حياً
 
 export function useDragHandlers() {
+
   const [doctors, setDoctors] = useState<DoctorWithApts[]>(() =>
     INITIAL_DOCTORS.map((doc) => ({
       ...doc,
-      appointments: APPOINTMENTS.filter((apt) => apt.docId === doc.id),
-    }))
+      appointments: APPOINTMENTS.map((apt) => ({
+        ...apt,
+        date: "5/5/2026",
+        phone: "0900 000 000",
+      })).filter((apt) => apt.docId === doc.id),
+    })),
   );
 
   const isEditMode = useEditeMode((state) => state.isEditMode);
+  const setConflict = useGlobalConflictStore((state) => state.setConflict);
+  const setDrawerOpen = useGlobalConflictStore((state) => state.setDrawerOpen);
+  const conflictPayload = useGlobalConflictStore(
+    (state) => state.conflictPayload,
+  );
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<ActiveDragType>(null);
   const [activeData, setActiveData] = useState<DragDataPayload | null>(null);
   const [overSlotInfo, setOverSlotInfo] = useState<OverSlotInfo | null>(null);
-  const [snapshotDoctors, setSnapshotDoctors] = useState<DoctorWithApts[] | null>(null);
+  const [snapshotDoctors, setSnapshotDoctors] = useState<
+    DoctorWithApts[] | null
+  >(null);
+
+  // تخزين موقت للحدث المجرور لتأكيده لاحقاً عبر الـ Drawer
+  const [pendingMove, setPendingMove] = useState<{
+    payloadData: ColumnAppointmentsType;
+    targetDoctorId: string;
+    newStart: number;
+    newEnd: number;
+  } | null>(null);
 
   const [isToastOpen, setIsToastOpen] = useState(false);
   const [toastInfo, setToastInfo] = useState<ToastInfo>({
@@ -40,99 +70,183 @@ export function useDragHandlers() {
     newTimeLabel: "",
   });
 
-  const currentMinutesSinceMidnight = useCurrentTime();
-
-  // New handler for modifying appointments directly via context menu actions
   const updateAppointment = useCallback(
     (updatedApt: ExtendedAppointmentType) => {
-      // 1. Snapshot full state for robust Undo tracking
       setSnapshotDoctors(JSON.parse(JSON.stringify(doctors)));
       setIsToastOpen(false);
 
-      // 2. Perform cross-doctor atomic immutable state swap
       setDoctors((prev) =>
         prev.map((doc) => {
           const filteredApts = (doc.appointments || []).filter(
-            (a) => a && a.id !== updatedApt.id
+            (a) => a && a.id !== updatedApt.id,
           );
-
           if (doc.id === updatedApt.docId) {
             filteredApts.push(updatedApt as ColumnAppointmentsType);
           }
-
           return { ...doc, appointments: filteredApts };
-        })
+        }),
       );
 
-      // 3. Trigger corresponding operational success toast
-      const duration = updatedApt.end - updatedApt.start;
       const titleString = updatedApt.title || "Appointment";
       setToastInfo({
         patientName: titleString.split(" - ")[0],
-        newTimeLabel: formatMinutesToTime(updatedApt.start, duration),
+        newTimeLabel: formatMinutesToTime(
+          updatedApt.start,
+          updatedApt.end - updatedApt.start,
+        ),
       });
       setIsToastOpen(true);
     },
-    [doctors]
+    [doctors],
   );
-
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
       if (!isEditMode) return;
-
       const { active } = event;
       const currentData = active.data.current as DragDataPayload | undefined;
 
-      if (currentData?.type === "appointment" && currentData.appointmentData) {
-        const absoluteAptEndMinutes =
-          START_TIME_MINUTES + currentData.appointmentData.end;
-        if (currentMinutesSinceMidnight > absoluteAptEndMinutes) {
-          return;
-        }
-      }
-
       setActiveId(active.id as string);
-      setActiveType(currentData?.type ?? (active.data.current?.sortable ? "doctor" : null));
+      setActiveType(
+        currentData?.type ?? (active.data.current?.sortable ? "doctor" : null),
+      );
       setActiveData(currentData ?? null);
       setSnapshotDoctors(JSON.parse(JSON.stringify(doctors)));
       setIsToastOpen(false);
     },
-    [isEditMode, currentMinutesSinceMidnight, doctors]
+    [isEditMode, doctors],
   );
-
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
       const { over } = event;
-      if (!over || !isEditMode || activeType !== "appointment") {
-        setOverSlotInfo(null);
+      if (
+        !over ||
+        !isEditMode ||
+        activeType !== "appointment" ||
+        !activeData?.appointmentData
+      ) {
         return;
       }
 
       if (over.data.current?.type === "slot") {
         const targetDoctorId = over.data.current.idDoctor;
         const targetSlotIdx = over.data.current.slotIdx;
-        const aptData = activeData?.appointmentData;
+        const aptData = activeData.appointmentData;
 
-        if (aptData) {
-          const duration = aptData.end - aptData.start;
-          setOverSlotInfo({
-            docId: targetDoctorId,
-            slotIdx: targetSlotIdx,
-            top: targetSlotIdx * SLOT_HEIGHT,
-            height: (duration / ROW_MINUTES) * SLOT_HEIGHT,
-          });
-          return;
+        const duration = aptData.end - aptData.start;
+        const targetStart = targetSlotIdx * ROW_MINUTES;
+        const targetEnd = targetStart + duration;
+
+        setOverSlotInfo({
+          docId: targetDoctorId,
+          slotIdx: targetSlotIdx,
+          top: targetSlotIdx * SLOT_HEIGHT,
+          height: (duration / ROW_MINUTES) * SLOT_HEIGHT,
+        });
+
+        // 🔍 كشف التداخل الحي والخطير أثناء السحب المباشر فوق المواعيد الأخرى
+        const targetDocObj = doctors.find((d) => d.id === targetDoctorId);
+        if (targetDocObj) {
+          const collisions = (targetDocObj.appointments || []).filter(
+            (apt) =>
+              apt.id !== aptData.id &&
+              Math.max(targetStart, apt.start) < Math.min(targetEnd, apt.end),
+          );
+
+          if (collisions.length > 0) {
+            const conflictingItems: ConflictingItem[] = collisions.map((c) => {
+              const overlap =
+                Math.min(targetEnd, c.end) - Math.max(targetStart, c.start);
+              const { score, severity } = calculatePriorityScore(c, overlap);
+              const parts = (c.title || "").split(" - ");
+              return {
+                appointmentId: c.id,
+                patientName: parts[0] || "Unknown Patient",
+                doctorName: targetDocObj.name,
+                visitType: parts[1] || "Consultation",
+                start: c.start,
+                end: c.end,
+                overlapMinutes: overlap,
+                severity,
+                priorityScore: score,
+                phone: (c).phone || "0900 000 000",
+              };
+            });
+
+            // فرز الحالات تنازلياً حسب نقاط الأولوية الأعلى أولاً
+            conflictingItems.sort((a, b) => b.priorityScore - a.priorityScore);
+
+            setConflict({
+              draggedApt: aptData as ExtendedAppointmentType,
+              targetDoctorId,
+              targetStart,
+              targetEnd,
+              conflictingItems,
+            });
+          } else {
+            setConflict(null);
+          }
         }
       }
-      setOverSlotInfo(null);
     },
-    [isEditMode, activeType, activeData]
+    [isEditMode, activeType, activeData, doctors, setConflict],
   );
+
+  const executeMove = useCallback(
+    (
+      payloadData: ColumnAppointmentsType,
+      targetDoctorId: string,
+      newStart: number,
+      newEnd: number,
+    ) => {
+      setDoctors((prev) =>
+        prev.map((doc) => {
+          const filteredApts = (doc.appointments || []).filter(
+            (a) => a && a.id !== payloadData.id,
+          );
+          if (doc.id === targetDoctorId) {
+            filteredApts.push({
+              ...payloadData,
+              start: newStart,
+              end: newEnd,
+              docId: targetDoctorId,
+            });
+          }
+          return { ...doc, appointments: filteredApts };
+        }),
+      );
+
+      const titleString = payloadData.title || "Appointment";
+      setToastInfo({
+        patientName: titleString.split(" - ")[0],
+        newTimeLabel: formatMinutesToTime(newStart, newEnd - newStart),
+      });
+      setIsToastOpen(true);
+      setPendingMove(null);
+      setConflict(null);
+    },
+    [setConflict],
+  );
+
+  const confirmPendingMove = useCallback(() => {
+    if (pendingMove) {
+      executeMove(
+        pendingMove.payloadData,
+        pendingMove.targetDoctorId,
+        pendingMove.newStart,
+        pendingMove.newEnd,
+      );
+    }
+  }, [pendingMove, executeMove]);
+
+  const cancelPendingMove = useCallback(() => {
+    setPendingMove(null);
+    setConflict(null);
+    setDrawerOpen(false);
+  }, [setConflict, setDrawerOpen]);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
-
       setActiveId(null);
       setActiveType(null);
       setActiveData(null);
@@ -140,7 +254,10 @@ export function useDragHandlers() {
 
       if (!over || !isEditMode) return;
 
-      if (active.data.current?.type === "doctor" || active.data.current?.sortable) {
+      if (
+        active.data.current?.type === "doctor" ||
+        active.data.current?.sortable
+      ) {
         if (active.id !== over.id) {
           setDoctors((items) => {
             const oldIndex = items.findIndex((i) => i.id === active.id);
@@ -162,44 +279,19 @@ export function useDragHandlers() {
         const newStart = targetSlotIdx * ROW_MINUTES;
         const newEnd = newStart + duration;
 
-        setDoctors((prev) =>
-          prev.map((doc) => {
-            const filteredApts = (doc.appointments || []).filter(
-              (a) => a && a.id !== active.id
-            );
+        // 🚀 إذا تم إسقاط الموعد ووجد تداخل نشط، افتح الدرج تلقائياً وعلق الإسقاط حتى تأكيد السكرتيرة
+        if (conflictPayload && conflictPayload.conflictingItems.length > 0) {
+          setPendingMove({ payloadData, targetDoctorId, newStart, newEnd });
+          setDrawerOpen(true);
+          return;
+        }
 
-            if (doc.id === targetDoctorId) {
-              filteredApts.push({
-                ...payloadData,
-                start: newStart,
-                end: newEnd,
-                docId: targetDoctorId,
-              });
-            }
-
-            return { ...doc, appointments: filteredApts };
-          })
-        );
-
-        const titleString = payloadData.title || "Appointment";
-        setToastInfo({
-          patientName: titleString.split(" - ")[0],
-          newTimeLabel: formatMinutesToTime(newStart, duration),
-        });
-        setIsToastOpen(true);
+        // نقل مستقر بدون تعقيدات في حال عدم وجود أي تداخل زمني
+        executeMove(payloadData, targetDoctorId, newStart, newEnd);
       }
     },
-    [isEditMode, activeType]
+    [isEditMode, activeType, conflictPayload, executeMove, setDrawerOpen],
   );
-
-  const handleUndoAction = useCallback(() => {
-    if (snapshotDoctors) {
-      setDoctors(snapshotDoctors);
-      setSnapshotDoctors(null);
-    }
-  }, [snapshotDoctors]);
-
-  const closeToast = useCallback(() => setIsToastOpen(false), []);
 
   const overlayMeta = useMemo(() => {
     const duration = activeData?.appointmentData
@@ -210,38 +302,45 @@ export function useDragHandlers() {
       duration,
     };
   }, [activeData]);
-  // Inside useDragHandlers.ts — add this handler function:
-const addAppointment = useCallback((newApt: ColumnAppointmentsType) => {
-  setDoctors((prevDoctors) =>
-    prevDoctors.map((doc) => {
-      if (doc.id === newApt.docId) {
-        return {
-          ...doc,
-          appointments: [...(doc.appointments || []), newApt],
-        };
-      }
-      return doc;
-    })
-  );
-}, []);
 
-// Expose it at the bottom return block of your hook:
-return {
-  doctors,
-  activeId,
-  activeType,
-  activeData,
-  overSlotInfo,
-  isToastOpen,
-  toastInfo,
-  overlayMeta,
-  handleDragStart,
-  handleDragOver,
-  handleDragEnd,
-  handleUndoAction,
-  closeToast,
-  updateAppointment,
-  addAppointment, // ✅ Exported here
-};
+  const handleUndoAction = useCallback(() => {
+    if (snapshotDoctors) {
+      setDoctors(snapshotDoctors);
+      setSnapshotDoctors(null);
+    }
+  }, [snapshotDoctors]);
 
+  const addAppointment = useCallback((newApt: ColumnAppointmentsType) => {
+    setDoctors((prevDoctors) =>
+      prevDoctors.map((doc) => {
+        if (doc.id === newApt.docId) {
+          return {
+            ...doc,
+            appointments: [...(doc.appointments || []), newApt],
+          };
+        }
+        return doc;
+      }),
+    );
+  }, []);
+
+  return {
+    doctors,
+    activeId,
+    activeType,
+    activeData,
+    overSlotInfo,
+    isToastOpen,
+    toastInfo,
+    overlayMeta,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+    handleUndoAction,
+    closeToast: () => setIsToastOpen(false),
+    updateAppointment,
+    addAppointment,
+    confirmPendingMove,
+    cancelPendingMove,
+  };
 }
