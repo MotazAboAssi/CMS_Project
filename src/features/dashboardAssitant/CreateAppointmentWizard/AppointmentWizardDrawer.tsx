@@ -5,17 +5,24 @@ import {
   useAppointmentWizard,
   type WizardFormData,
 } from "./useAppointmentWizard";
-import { Step1TreatmentInfo, type availableDoctorsFilteredType } from "./Step1TreatmentInfo";
+import {
+  Step1TreatmentInfo,
+  type availableDoctorsFilteredType,
+} from "./Step1TreatmentInfo";
 import { Step2PatientInfo } from "./Step2PatientInfo";
 import { Step3ReviewSummary } from "./Step3ReviewSummary";
 
 import { useWizardDrawer } from "../hooks/useWizardDrawer";
 import StepperCustome from "./StepperCustome";
-import type { ColumnAppointmentsType, DoctorWithApts } from "../types";
+import type {
+  ColumnAppointmentsType,
+  DoctorWithApts,
+} from "../types";
+import { usePendingRequest } from "../hooks/usePendingRequest";
 
 interface AppointmentWizardDrawerProps {
-  doctors: DoctorWithApts[];
-  onExecuteCreation: (newApt: ColumnAppointmentsType) => void;
+  doctors: DoctorWithApts[]; //[cite: 16]
+  onExecuteCreation: (newApt: ColumnAppointmentsType) => void; //[cite: 16]
 }
 
 export function AppointmentWizardDrawer({
@@ -24,27 +31,42 @@ export function AppointmentWizardDrawer({
 }: AppointmentWizardDrawerProps) {
   const isWizardOpen = useWizardDrawer((state) => state.isWizardOpen);
   const onClose = useWizardDrawer((state) => state.onClose);
+  const pendingRequestData = useWizardDrawer(
+    (state) => state.pendingRequestData,
+  ); // جلب بيانات الطلب النشط حالياً إن وجدت
+
+  const onRemovePendingRequest = usePendingRequest(
+    (state) => state.onRemovePendingRequest,
+  );
 
   // بناء دالة وسيطة تقوم بصياغة كائن الموعد وحفظه مباشرة في الـ Grid State
   const handleSaveAppointment = useCallback(
-    (wizardData: any) => {
+    (wizardData?: WizardFormData) => {
+      if (!wizardData) return null; //[cite: 16]
       const treatmentName =
-        TREATMENT_OPTIONS.find((t) => t.id === wizardData.treatmentId)?.name ||
-        "";
+        TREATMENT_OPTIONS.find((t) => t.id === wizardData.treatmentId)?.name || //[cite: 16]
+        ""; //[cite: 16]
 
       const newApt: ColumnAppointmentsType = {
-        id: `apt-${Date.now()}`,
-        docId: wizardData.doctorId,
-        title: `${wizardData.patientName} - ${treatmentName}`,
-        start: wizardData.timeSlot || 0,
-        end: (wizardData.timeSlot || 0) + wizardData.duration,
-        status: wizardData.complexity === "urgent" ? "urgent" : "confirmed",
+        id: `apt-${Date.now()}`, //[cite: 16]
+        docId: wizardData.doctorId, //[cite: 16]
+        title: `${wizardData.patientName} - ${treatmentName}`, //[cite: 16]
+        start: wizardData.timeSlot || 0, //[cite: 16]
+        end: (wizardData.timeSlot || 0) + wizardData.duration, //[cite: 16]
+        status: wizardData.complexity === "urgent" ? "urgent" : "confirmed", //[cite: 16]
+        phone: wizardData.patientPhone || "", //[cite: 16]
       };
 
-      onExecuteCreation(newApt); // تحديث شبكة المواعيد فوراً
-      onClose(); // إغلاق الـ Drawer
+      onExecuteCreation(newApt); // تحديث شبكة المواعيد فوراً[cite: 16]
+
+      // 🔥 إذا كان هذا الموعد قادماً من مراجعة طلب معلق، قم بحذفه فوراً من القائمة الجانبية
+      if (pendingRequestData) {
+        onRemovePendingRequest(pendingRequestData.id);
+      }
+
+      onClose(); // إغلاق الـ Drawer[cite: 16]
     },
-    [onExecuteCreation, onClose],
+    [onExecuteCreation, onClose, pendingRequestData, onRemovePendingRequest],
   );
 
   // نمرر الدالة الوسيطة handleSaveAppointment هنا بدلاً من onExecuteCreation المباشرة
@@ -54,7 +76,8 @@ export function AppointmentWizardDrawer({
   useEffect(() => {
     if (!isWizardOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") handleSaveAppointment(wizard);
+      if (e.key === "Escape")
+        handleSaveAppointment(wizard as unknown as WizardFormData);
       if (e.key === "Enter" && wizard.currentStep === 3)
         wizard.handleFinalSubmit();
     };
@@ -71,10 +94,10 @@ export function AppointmentWizardDrawer({
   if (!isWizardOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] flex justify-end">
+    <div className="fixed inset-0 z-[70] flex justify-end">
       {/* Semi-transparent Backdrop Mask Layer */}
       <div
-        onClick={handleSaveAppointment}
+        onClick={() => handleSaveAppointment()}
         className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-all duration-1000 ease-in-out"
       />
 
@@ -83,7 +106,7 @@ export function AppointmentWizardDrawer({
         {/* Header Block Section */}
         <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between shrink-0">
           <button
-            onClick={handleSaveAppointment}
+            onClick={onClose}
             className="p-1 rounded-lg text-neutral-400 hover:bg-neutral-50 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
@@ -103,7 +126,9 @@ export function AppointmentWizardDrawer({
               formData={wizard.formData}
               availableTimeSlots={wizard.availableTimeSlots}
               // عمل cast هنا لحل مشكلة عدم تطابق الـ Types بشكل مؤقت وآمن
-              availableDoctorsFiltered={wizard.availableDoctorsFiltered as availableDoctorsFilteredType[]  }
+              availableDoctorsFiltered={
+                wizard.availableDoctorsFiltered as availableDoctorsFilteredType[]
+              }
               searchTreatment={wizard.searchTreatment}
               setSearchTreatment={wizard.setSearchTreatment}
               handleFieldChange={wizard.handleFieldChange}
@@ -116,7 +141,7 @@ export function AppointmentWizardDrawer({
         <div className="px-6 py-4 border-t border-neutral-100 flex items-center justify-between shrink-0">
           {wizard.currentStep === 1 ? (
             <button
-              onClick={handleSaveAppointment}
+              onClick={onClose}
               className="px-4 py-2 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 rounded-xl transition-all cursor-pointer"
             >
               Cancel

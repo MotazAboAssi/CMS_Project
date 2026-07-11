@@ -47,15 +47,14 @@ export function ExistingBooked({
             key={apt.id}
             className="transition-all duration-200"
             style={{
-              opacity: conflictPayload && !isCardConflicting ? 0.35 : 1,
-              transform: isCardConflicting ? "scale(1.01)" : "none",
+              opacity: conflictPayload && !isCardConflicting ? 0.1 : 1,
+              zIndex: conflictPayload && !isCardConflicting ? -1 : 60,
             }}
           >
             <AppointmentCard
               apt={apt}
               isEditMode={isEditMode}
-              currentMinutesSinceGridStart={currentMinutesSinceGridStart}
-            />
+              currentMinutesSinceGridStart={currentMinutesSinceGridStart}             />
           </div>
         );
       })}

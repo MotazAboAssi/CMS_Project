@@ -26,20 +26,22 @@ import { CSS } from "@dnd-kit/utilities";
 // 1. استيراد المُعدّل المسؤول عن تقييد حركة السحب عمودياً فقط
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 import type { PendingRequest } from "../../types";
-import { INITIAL_REQUESTS } from "../../data/sideBarData";
 
-
+import { useWizardDrawer } from "../../hooks/useWizardDrawer";
+import { usePendingRequest } from "../../hooks/usePendingRequest";
 
 export function PendingRequestSection() {
   const isEditMode = useEditeMode((state) => state.isEditMode);
-  const [requests, setRequests] = useState<PendingRequest[]>(INITIAL_REQUESTS);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // const [requests, setRequests] = useState(INITIAL_REQUESTS)
+  const requests = usePendingRequest((state) => state.requests);
+  const setRequests = usePendingRequest((state) => state.setRequests);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   function handleDragStart(event: DragStartEvent) {
@@ -53,16 +55,19 @@ export function PendingRequestSection() {
     if (!over) return;
 
     if (active.id !== over.id) {
-      setRequests((items) => {
-        const oldIndex = items.findIndex((i) => i.id === active.id);
+      const newRquests = (items: PendingRequest[]): PendingRequest[] => {
+        const oldIndex: number = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
         return arrayMove(items, oldIndex, newIndex);
-      });
+      };
+      setRequests(newRquests(requests));
     }
   }
 
   const activeItem = requests.find((r) => r.id === activeId);
 
+  if(requests.length == 0)
+    return null
   return (
     <div className="flex-1 flex flex-col min-h-0 p-5">
       <div className="flex items-center justify-between mb-4 shrink-0">
@@ -70,9 +75,11 @@ export function PendingRequestSection() {
           <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
             Pending requests:
           </h4>
-          <span className="bg-red-50 text-red-500 text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border border-red-100">
-            {requests.length}
-          </span>
+          {requests.length == 0 ? null : (
+            <span className="bg-red-50 text-red-500 text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border border-red-100">
+              {requests.length}
+            </span>
+          )}
         </div>
       </div>
 
@@ -90,12 +97,12 @@ export function PendingRequestSection() {
             strategy={verticalListSortingStrategy}
           >
             {requests.map((item) => (
-              <SortableRequestCard
-                key={item.id}
-                item={item}
-                isEditMode={isEditMode}
-              />
-            ))}
+                  <SortableRequestCard
+                    key={item.id}
+                    item={item}
+                    isEditMode={isEditMode}
+                  />
+                ))}
           </SortableContext>
 
           <DragOverlay dropAnimation={null}>
@@ -111,7 +118,8 @@ export function PendingRequestSection() {
                         {activeItem.patientName}
                       </h5>
                       <p className="flex items-center text-[11px] text-neutral-400 font-medium mt-0.5 gap-1 truncate">
-                        <Calendar className="w-3 h-3 text-neutral-400 shrink-0" /> {activeItem.doctorName}
+                        <Calendar className="w-3 h-3 text-neutral-400 shrink-0" />{" "}
+                        {activeItem.doctorName}
                       </p>
                     </div>
                     <span className="text-[10px] font-bold text-[#0066ff] bg-blue-50/70 border border-blue-100 px-1.5 py-0.5 rounded-md shrink-0">
@@ -120,10 +128,12 @@ export function PendingRequestSection() {
                   </div>
                   <div className="flex flex-col justify-between text-[11px] font-semibold text-neutral-500 mt-2">
                     <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-neutral-400" /> {activeItem.date}
+                      <Calendar className="w-3 h-3 text-neutral-400" />{" "}
+                      {activeItem.date}
                     </div>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <Clock className="w-3 h-3 text-neutral-400" /> {activeItem.time}
+                      <Clock className="w-3 h-3 text-neutral-400" />{" "}
+                      {activeItem.time}
                     </div>
                   </div>
                 </div>
@@ -142,6 +152,9 @@ interface SortableCardProps {
 }
 
 function SortableRequestCard({ item, isEditMode }: SortableCardProps) {
+  const openWithPendingRequest = useWizardDrawer(
+    (state) => state.openWithPendingRequest,
+  );
   const {
     attributes,
     listeners,
@@ -149,15 +162,15 @@ function SortableRequestCard({ item, isEditMode }: SortableCardProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ 
+  } = useSortable({
     id: item.id,
-    disabled: !isEditMode 
+    disabled: !isEditMode,
   });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.3 : 1, 
+    opacity: isDragging ? 0.3 : 1,
   };
 
   return (
@@ -192,7 +205,8 @@ function SortableRequestCard({ item, isEditMode }: SortableCardProps) {
               {item.patientName}
             </h5>
             <p className="flex items-center text-[11px] text-neutral-400 font-medium mt-0.5 gap-1 truncate">
-              <Calendar className="w-3 h-3 text-neutral-400 shrink-0" /> {item.doctorName}
+              <Calendar className="w-3 h-3 text-neutral-400 shrink-0" />{" "}
+              {item.doctorName}
             </p>
           </div>
           <span className="text-[10px] font-bold text-[#0066ff] bg-blue-50/70 border border-blue-100 px-1.5 py-0.5 rounded-md shrink-0">
@@ -211,10 +225,15 @@ function SortableRequestCard({ item, isEditMode }: SortableCardProps) {
 
         <div
           className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            isEditMode ? "max-h-0 mt-0 opacity-0 pointer-events-none" : "max-h-12 mt-3 opacity-100"
+            isEditMode
+              ? "max-h-0 mt-0 opacity-0 pointer-events-none"
+              : "max-h-12 mt-3 opacity-100"
           }`}
         >
-          <Button className="w-full h-8 bg-[#39A3FF] hover:bg-[#258ce5] text-white text-xs font-bold rounded-lg shadow-2xs transition-colors">
+          <Button
+            className="w-full h-8 bg-[#39A3FF] hover:bg-[#258ce5] text-white text-xs font-bold rounded-lg shadow-2xs transition-colors"
+            onClick={() => openWithPendingRequest(item)} // ربط الأكشن هنا 🔥
+          >
             Review
           </Button>
         </div>

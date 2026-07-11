@@ -106,13 +106,15 @@ export function AppointmentCard({
 // 🚀 حقن الهوية التحذيرية الملونة المتوهجة للنزاعات الحية (Visual Highlights)
         isConflicting && conflictItem.severity === "critical" && "border-red-500 bg-red-50 text-red-900 ring-2 ring-red-400 z-30 animate-pulse",
         isConflicting && conflictItem.severity !== "critical" && "border-amber-500 bg-amber-50 text-amber-900 ring-2 ring-amber-400 z-30",
-
+        
         // الحالات الافتراضية المستقرة
         !isConflicting && apt.status === "confirmed" && "bg-[#E2F1FF] border-blue-200/80 text-[#0055cc]",
         !isConflicting && apt.status === "urgent" && "bg-red-50 border-red-200/80 text-red-700",
         !isConflicting && apt.status === "in_progress" && "bg-purple-50 border-purple-200/80 text-purple-700",
         !isConflicting && apt.status === "late" && "bg-amber-50 border-amber-200/80 text-amber-700",
-        !isConflicting && apt.status === "unavailable" && "bg-neutral-50 border-neutral-200 text-neutral-400 line-through opacity-75"
+        !isConflicting && apt.status === "unavailable" && "bg-neutral-50 border-neutral-200 text-neutral-400 line-through opacity-75",
+
+        isConflicting && "-z-10", 
       )}
     >
 {/* 🚀 أيقونة تداخل منبثقة ملونة في أعلى الكرت المتأثر */}

@@ -28,7 +28,7 @@ export function ContentAppointementCard({
         {/* النقطة الحمراء للمواعيد المستعجلة - تختفي في التعديل لراحة بصرية أفضل */}
         <div
           className={cn(
-            "transition-all duration-200 overflow-hidden",
+            "transition-all duration-200 overflow-hidden animate-bounce",
             apt.status === "urgent" && !showLockIcon && !showGripHandle
               ? "w-1.5 opacity-100 mr-1"
               : "w-0 opacity-0 mr-0",

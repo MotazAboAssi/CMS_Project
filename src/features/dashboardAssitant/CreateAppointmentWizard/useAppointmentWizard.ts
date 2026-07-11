@@ -106,7 +106,7 @@ export const TREATMENT_OPTIONS: TreatmentOption[] = [
 
 export function useAppointmentWizard(
   doctors: DoctorWithApts[],
-  onSave: (data: unknown) => void,
+  onSave: (data?: WizardFormData & { price: number }) => void,
   onClose: () => void,
 ) {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
@@ -115,24 +115,41 @@ export function useAppointmentWizard(
   const [searchDoctor, setSearchDoctor] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDuplicatePhone, setIsDuplicatePhone] = useState(false);
-  const initialData = useWizardDrawer((state) => state.initialData);
+  // const initialData = useWizardDrawer((state) => state.initialData);
   const isWizardOpen = useWizardDrawer((state) => state.isWizardOpen);
 
+  const pendingRequestData = useWizardDrawer(
+    (state) => state.pendingRequestData,
+  );
   // بوابة التحويل والمزامنة عند فتح الـ Wizard عبر النقر على خلية الجدول
   useEffect(() => {
-    if (isWizardOpen && initialData) {
+    if (isWizardOpen && pendingRequestData) {
+      // التحقق من هوية الطبيب بربط الاسم بالـ ID إن أمكن، أو تركها فارغة ليختارها المستخدم في الخطوة الأولى
+      const matchedDoctor = doctors.find(
+        (doc) => doc.name === pendingRequestData.doctorName,
+      );
+
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData((prev) => ({
         ...prev,
-        doctorId: initialData.doctorId,
-        // تحويل وقت الخلية النسبي إلى وقت مطلق من منتصف الليل ليناسب المعالج والـ Select Dropdown
-        timeSlot: initialData.timeSlot + START_TIME_MINUTES,
-        date: new Date(), // تعيين تاريخ اليوم كافتراضي عند الحجز المباشر
-        treatmentId: "t1",
-        duration: initialData.duration || 15,
+        // الخطوة الأولى: بيانات الموعد
+        doctorId: matchedDoctor ? matchedDoctor.id : "",
+        date: new Date(), // تعيين اليوم كافتراضي أو استخدام Date.parse إن كان متوافقاً
+        treatmentId: "t1", // تفضيل "Follow-up Visit" كافتراضي
+        timeSlot: START_TIME_MINUTES + 60, // توقيت افتراضي أو يمكن تركه فارغاً ليعبئه المستخدم
+        duration: 15,
+
+        // الخطوة الثانية: بيانات المريض القادمة من الـ Request 🔥
+        patientName: pendingRequestData.patientName,
+        patientPhone: "0900 000 000", // أو أي حقل افتراضي للهاتف إذا لم يتوفر في الـ PendingRequest
+        patientAge: "30", // عمر افتراضي للتخطي
+        patientGender: "Male",
+        patientAddress: "Damascus",
+        isExistingPatient: false,
+        notes: `Created via Pending Request assigned on ${pendingRequestData.date} ${pendingRequestData.time}`,
       }));
     }
-  }, [isWizardOpen, initialData]);
+  }, [isWizardOpen, pendingRequestData, doctors]);
 
   const selectedTreatment = useMemo(() => {
     return TREATMENT_OPTIONS.find((t) => t.id === formData.treatmentId) || null;
