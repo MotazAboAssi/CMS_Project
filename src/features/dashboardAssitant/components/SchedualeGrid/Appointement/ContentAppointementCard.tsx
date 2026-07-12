@@ -1,4 +1,4 @@
-import type { ExtendedAppointmentType } from "@/features/dashboardAssitant/types";
+import type { AppointmentType } from "@/features/dashboardAssitant/types";
 import { cn } from "@/lib/utils";
 
 export function ContentAppointementCard({
@@ -12,7 +12,7 @@ export function ContentAppointementCard({
   endH,
   endM,
 }: {
-  apt: ExtendedAppointmentType;
+  apt: AppointmentType;
   showLockIcon: boolean;
   showGripHandle: boolean;
   appointement: { patientName: string; visitType: string };

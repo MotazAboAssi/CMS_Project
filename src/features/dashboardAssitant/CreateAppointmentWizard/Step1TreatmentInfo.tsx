@@ -8,7 +8,7 @@ import {
 import {
   formatMinutesToAMPM,
 } from "../components/SchedualeGrid/DNDGrid/utils/timeFormatters";
-import type { ColumnAppointmentsType } from "../types";
+import type { AppointmentType } from "../types";
 import { Calendar } from "@/components/ui/calendar";
 
 export interface availableDoctorsFilteredType {
@@ -20,8 +20,8 @@ export interface availableDoctorsFilteredType {
   specialty?: string;
   patients?: number;
   avatar?: string;
-  appointments?: ColumnAppointmentsType[];
-  columnAppointments?: ColumnAppointmentsType[];
+  appointments?: AppointmentType[];
+  columnAppointments?: AppointmentType[];
 }
 interface Step1TreatmentInfoType {
   formData: WizardFormData;

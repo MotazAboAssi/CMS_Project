@@ -1,4 +1,4 @@
-export interface ColumnAppointmentsType {
+export interface AppointmentType {
   phone: string;
   id: string;
   docId: string;

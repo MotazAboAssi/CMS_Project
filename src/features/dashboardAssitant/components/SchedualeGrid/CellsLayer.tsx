@@ -1,7 +1,6 @@
 import { TOTAL_SLOTS, ROW_MINUTES, SLOT_HEIGHT } from "../../data/scheduleGrid";
 import { useEditeMode, useHandleSelection } from "../../hooks";
-import { useWizardDrawer } from "../../hooks/useWizardDrawer";
-import type { ColumnAppointmentsType } from "../../types";
+import type { AppointmentType } from "../../types";
 import { useDroppable } from "@dnd-kit/core";
 
 // 1. مكوّن منفصل لكل خلية زمنية لمنع خطأ الـ Rules of Hooks
@@ -83,7 +82,7 @@ export function CellsLayer({
   columnAppointments,
   idDoctor,
 }: {
-  columnAppointments: ColumnAppointmentsType[];
+  columnAppointments: AppointmentType[];
   idDoctor: string;
 }) {
   // const isSelecting = useHandleSelection((state) => state.isSelecting);

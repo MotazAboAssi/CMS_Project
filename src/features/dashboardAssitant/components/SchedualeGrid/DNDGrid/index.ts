@@ -1,2 +1,2 @@
-export {DNDGrid} from './DNDGrid'
+export {DNDGrid} from "./DNDGrid" 
 export {gridCollisionStrategy} from './gridCollisionStrategy'

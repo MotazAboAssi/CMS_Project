@@ -1,7 +1,7 @@
-import type { ExtendedAppointmentType } from ".";
+import type { AppointmentType } from "./AppointmentType";
 
 export interface ExistingBookedProps {
-  columnAppointments: ExtendedAppointmentType[];
+  columnAppointments: AppointmentType[];
   docId: string;
   overSlotInfo?: {
     docId: string;

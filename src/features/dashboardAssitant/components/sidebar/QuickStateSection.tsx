@@ -1,7 +1,8 @@
 import  { cn } from "@/lib/utils";
-import { quickState } from "../../data/sideBarData";
+import { QuickState } from "../../data/sideBarData";
 
 export function QuickStateSection() {
+  const quickState = QuickState();
   return (
     <div className="p-5 border-b border-[#DBDBDC]">
       <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-3.5">

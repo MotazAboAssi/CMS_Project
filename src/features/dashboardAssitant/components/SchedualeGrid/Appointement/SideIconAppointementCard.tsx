@@ -1,4 +1,4 @@
-import type { ExtendedAppointmentType } from "@/features/dashboardAssitant/types";
+import type { AppointmentType } from "@/features/dashboardAssitant/types";
 import { cn } from "@/lib/utils";
 import { GripVertical ,Lock} from "lucide-react";
 
@@ -9,7 +9,7 @@ export function SideIconAppointementCard({
   showLockIcon,
 }: {
   isEditMode: boolean;
-  apt: ExtendedAppointmentType;
+  apt: AppointmentType;
   showGripHandle: boolean;
   showLockIcon: boolean;
 }) {

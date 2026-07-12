@@ -32,6 +32,7 @@ import { ConflictDrawer } from "../ConflictDrawer";
 export function DNDGrid() {
   const {
     doctors,
+    setDoctors,
     activeId,
     activeType,
     activeData,
@@ -119,8 +120,7 @@ export function DNDGrid() {
       {/* 🚀 حقن درج النزاعات التفاعلي في قاع المكون المستقر */}
       <ConflictDrawer
         onConfirm={confirmPendingMove}
-        onCancel={cancelPendingMove}
-      />
+        onCancel={cancelPendingMove} doctors={doctors} setDoctors={setDoctors }      />
     </DndContext>
   );
 }

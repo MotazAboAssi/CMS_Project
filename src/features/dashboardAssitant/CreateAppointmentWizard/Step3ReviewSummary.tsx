@@ -22,31 +22,32 @@ export function Step3ReviewSummary({
   const doctorName =
     doctors.find((d) => d.id === formData.doctorId)?.name || "";
 
-  const summaryRows = [
-    { label: "Treatment", value: treatmentName },
-    { label: "Complexity", value: formData.complexity, isCapitalize: true },
-    { label: "Duration", value: `${computedDuration} minutes` },
-    { label: "Doctor", value: doctorName },
-    { label: "Date", value: formatFullLocalDate(formData.date) },
-    {
-      label: "Time",
-      value:
-        formData.timeSlot !== null
-          ? formatMinutesToAMPM(formData.timeSlot)
-          : "",
-    },
-    {
-      label: "Price",
-      value: `${computedPrice.toLocaleString()} SYP`,
-      isBold: true,
-    },
-    { label: "Patient Name", value: formData.patientName || "—" },
-    { label: "Contact Number", value: formData.patientPhone || "—" },
-    { label: "Patient Age", value: formData.patientAge || "—" },
-    { label: "Gender", value: formData.patientGender || "—", isCapitalize: true },
-    { label: "Address", value: formData.patientAddress || "—" },
-    { label: "Notes", value: formData.notes || "—" },
-  ];
+    const summaryRows = [
+      { label: "Treatment", value: treatmentName },
+      { label: "Complexity", value: formData.complexity, isCapitalize: true },
+      { label: "Duration", value: `${computedDuration} minutes` },
+      { label: "Doctor", value: doctorName },
+      { label: "Require Doctor", value: formData.isLockedToDoctor },
+      { label: "Date", value: formatFullLocalDate(formData.date) },
+      {
+        label: "Time",
+        value:
+          formData.timeSlot !== null
+            ? formatMinutesToAMPM(formData.timeSlot)
+            : "",
+      },
+      {
+        label: "Price",
+        value: `${computedPrice.toLocaleString()} SYP`,
+        isBold: true,
+      },
+      { label: "Patient Name", value: formData.patientName || "—" },
+      { label: "Contact Number", value: formData.patientPhone || "—" },
+      { label: "Patient Age", value: formData.patientAge || "—" },
+      { label: "Gender", value: formData.patientGender || "—", isCapitalize: true },
+      { label: "Address", value: formData.patientAddress || "—" },
+      { label: "Notes", value: formData.notes || "—" },
+    ];
 
   return (
     <div className="bg-neutral-50/50 border border-neutral-200/60 rounded-xl p-4 space-y-3 animate-in fade-in duration-200 select-none">

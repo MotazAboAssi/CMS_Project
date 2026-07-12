@@ -1,5 +1,5 @@
 import { ROW_MINUTES, SLOT_HEIGHT, START_TIME_MINUTES } from "@/features/dashboardAssitant/data/scheduleGrid";
-import type { ExtendedAppointmentType } from "@/features/dashboardAssitant/types";
+import type { AppointmentType } from "@/features/dashboardAssitant/types";
 import { cn } from "@/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 import { ContentAppointementCard, SideIconAppointementCard } from ".";
@@ -13,7 +13,7 @@ export function AppointmentCard({
   isEditMode,
   currentMinutesSinceGridStart,
 }: {
-  apt: ExtendedAppointmentType;
+  apt: AppointmentType;
   isEditMode: boolean;
   currentMinutesSinceGridStart: number;
 }) {
@@ -70,7 +70,7 @@ export function AppointmentCard({
     appointement.patientName = apt.title;
   } else {
     appointement.patientName =
-      apt.patientName || apt.patient?.name || "Patient";
+       apt.patient.name || "Patient";
   }
 
   return (

@@ -1,4 +1,4 @@
-import type { DoctorWithApts } from "@/features/dashboardAssitant/types";
+import type { DoctorType } from "@/features/dashboardAssitant/types";
 
 export interface OverSlotInfo {
   docId: string;
@@ -19,5 +19,5 @@ export interface DragState {
   activeType: ActiveDragType;
   activeData: import("@/features/dashboardAssitant/types").DragDataPayload | null;
   overSlotInfo: OverSlotInfo | null;
-  snapshotDoctors: DoctorWithApts[] | null;
+  snapshotDoctors: DoctorType[] | null;
 }

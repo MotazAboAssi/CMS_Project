@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { SLOT_HEIGHT, DOCTOR_COL_WIDTH } from "../../data/scheduleGrid";
 import { useHandleSelection } from "../../hooks";
-import type { DoctorWithApts } from "../../types";
+import type { DoctorType } from "../../types";
 // 🚀 استهلاك متجر التضاربات لضبط عتامة الواجهة حياً
 import { useGlobalConflictStore } from "../../hooks/useGlobalConflictStore";
 import { ExistingBooked } from "./Appointement";
@@ -9,7 +9,7 @@ import { CellsLayer } from "./CellsLayer";
 import { PersistentSelectionArea } from "./PersistentSelectionArea";
 
 interface DoctorsColumnLayoutProps {
-  doctors: DoctorWithApts[];
+  doctors: DoctorType[];
   overSlotInfo: {
     docId: string;
     slotIdx: number;

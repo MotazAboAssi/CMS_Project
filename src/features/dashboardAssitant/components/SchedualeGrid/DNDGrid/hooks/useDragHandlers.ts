@@ -15,22 +15,24 @@ import { useEditeMode } from "../../../../hooks";
 import { formatMinutesToTime } from "../utils/timeFormatters";
 // import { useCurrentTime } from "./useCurrentTime";
 import type {
-  ColumnAppointmentsType,
-  DoctorWithApts,
+  DoctorType,
   DragDataPayload,
-  ExtendedAppointmentType,
+  AppointmentType,
 } from "@/features/dashboardAssitant/types";
 import type {
   OverSlotInfo,
   ToastInfo,
   ActiveDragType,
 } from "../types/dragTypes";
-import { calculatePriorityScore, useGlobalConflictStore, type ConflictingItem } from "@/features/dashboardAssitant/hooks/useGlobalConflictStore";
+import {
+  calculatePriorityScore,
+  useGlobalConflictStore,
+  type ConflictingItem,
+} from "@/features/dashboardAssitant/hooks/useGlobalConflictStore";
 // 🚀 استيراد مخزن النزاعات لإشعاره فورا حياً
 
 export function useDragHandlers() {
-
-  const [doctors, setDoctors] = useState<DoctorWithApts[]>(() =>
+  const [doctors, setDoctors] = useState<DoctorType[]>(() =>
     INITIAL_DOCTORS.map((doc) => ({
       ...doc,
       appointments: APPOINTMENTS.map((apt) => ({
@@ -52,13 +54,13 @@ export function useDragHandlers() {
   const [activeType, setActiveType] = useState<ActiveDragType>(null);
   const [activeData, setActiveData] = useState<DragDataPayload | null>(null);
   const [overSlotInfo, setOverSlotInfo] = useState<OverSlotInfo | null>(null);
-  const [snapshotDoctors, setSnapshotDoctors] = useState<
-    DoctorWithApts[] | null
-  >(null);
+  const [snapshotDoctors, setSnapshotDoctors] = useState<DoctorType[] | null>(
+    null,
+  );
 
   // تخزين موقت للحدث المجرور لتأكيده لاحقاً عبر الـ Drawer
   const [pendingMove, setPendingMove] = useState<{
-    payloadData: ColumnAppointmentsType;
+    payloadData: AppointmentType;
     targetDoctorId: string;
     newStart: number;
     newEnd: number;
@@ -71,17 +73,17 @@ export function useDragHandlers() {
   });
 
   const updateAppointment = useCallback(
-    (updatedApt: ExtendedAppointmentType) => {
+    (updatedApt: AppointmentType) => {
       setSnapshotDoctors(JSON.parse(JSON.stringify(doctors)));
       setIsToastOpen(false);
 
       setDoctors((prev) =>
         prev.map((doc) => {
-          const filteredApts = (doc.appointments || []).filter(
+          const filteredApts: AppointmentType[] = doc.appointments.filter(
             (a) => a && a.id !== updatedApt.id,
           );
           if (doc.id === updatedApt.docId) {
-            filteredApts.push(updatedApt as ColumnAppointmentsType);
+            filteredApts.push(updatedApt as AppointmentType);
           }
           return { ...doc, appointments: filteredApts };
         }),
@@ -146,7 +148,9 @@ export function useDragHandlers() {
         // 🔍 كشف التداخل الحي والخطير أثناء السحب المباشر فوق المواعيد الأخرى
         const targetDocObj = doctors.find((d) => d.id === targetDoctorId);
         if (targetDocObj) {
-          const collisions = (targetDocObj.appointments || []).filter(
+          const collisions: AppointmentType[] = (
+            targetDocObj.appointments || []
+          ).filter(
             (apt) =>
               apt.id !== aptData.id &&
               Math.max(targetStart, apt.start) < Math.min(targetEnd, apt.end),
@@ -168,7 +172,7 @@ export function useDragHandlers() {
                 overlapMinutes: overlap,
                 severity,
                 priorityScore: score,
-                phone: (c).phone || "0900 000 000",
+                phone: c.patient.phone,
               };
             });
 
@@ -176,7 +180,7 @@ export function useDragHandlers() {
             conflictingItems.sort((a, b) => b.priorityScore - a.priorityScore);
 
             setConflict({
-              draggedApt: aptData as ExtendedAppointmentType,
+              draggedApt: aptData,
               targetDoctorId,
               targetStart,
               targetEnd,
@@ -193,7 +197,7 @@ export function useDragHandlers() {
 
   const executeMove = useCallback(
     (
-      payloadData: ColumnAppointmentsType,
+      payloadData: AppointmentType,
       targetDoctorId: string,
       newStart: number,
       newEnd: number,
@@ -262,7 +266,7 @@ export function useDragHandlers() {
           setDoctors((items) => {
             const oldIndex = items.findIndex((i) => i.id === active.id);
             const newIndex = items.findIndex((i) => i.id === over.id);
-            return arrayMove(items, oldIndex, newIndex) as DoctorWithApts[];
+            return arrayMove(items, oldIndex, newIndex) as DoctorType[];
           });
         }
         return;
@@ -310,7 +314,7 @@ export function useDragHandlers() {
     }
   }, [snapshotDoctors]);
 
-  const addAppointment = useCallback((newApt: ColumnAppointmentsType) => {
+  const addAppointment = useCallback((newApt: AppointmentType) => {
     setDoctors((prevDoctors) =>
       prevDoctors.map((doc) => {
         if (doc.id === newApt.docId) {
@@ -326,6 +330,7 @@ export function useDragHandlers() {
 
   return {
     doctors,
+    setDoctors,
     activeId,
     activeType,
     activeData,

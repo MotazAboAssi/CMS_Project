@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, Calendar, UserPlus, ArrowUp, ArrowDown } from "lucide-react";
-import type { ExtendedAppointmentType, DoctorWithApts } from "@/features/dashboardAssitant/types";
+import type { AppointmentType, DoctorType } from "@/features/dashboardAssitant/types";
 import { 
   getAvailableDoctorsForTransfer, 
   getValidEarlierIntervals, 
@@ -8,7 +8,7 @@ import {
 } from "./utils/conflictValidator";
 
 interface ContextMenuState {
-  appointment: ExtendedAppointmentType;
+  appointment: AppointmentType;
   x: number;
   y: number;
 }
@@ -19,8 +19,8 @@ export function AppointmentContextMenu({
   doctors,
   onExecuteAction,
 }: {
-  doctors: DoctorWithApts[];
-  onExecuteAction: (updatedApt: ExtendedAppointmentType) => void;
+  doctors: DoctorType[];
+  onExecuteAction: (updatedApt: AppointmentType) => void;
 }) {
   const [menuState, setMenuState] = useState<ContextMenuState | null>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<SubmenuType>(null);
@@ -29,7 +29,7 @@ export function AppointmentContextMenu({
 
   useEffect(() => {
     const handleOpenMenu = (e: Event) => {
-      const customEvent = e as CustomEvent<{ appointment: ExtendedAppointmentType; x: number; y: number }>;
+      const customEvent = e as CustomEvent<{ appointment: AppointmentType; x: number; y: number }>;
       const { appointment, x, y } = customEvent.detail;
       
       // Keep dropdown safely inside the screen bounds
@@ -63,7 +63,7 @@ export function AppointmentContextMenu({
   const earlierIntervals = getValidEarlierIntervals(appointment, doctors);
   const laterIntervals = getValidLaterIntervals(appointment, doctors);
 
-  const handleTrigger = (updated: ExtendedAppointmentType) => {
+  const handleTrigger = (updated: AppointmentType) => {
     onExecuteAction(updated);
     setMenuState(null);
     setActiveSubmenu(null);

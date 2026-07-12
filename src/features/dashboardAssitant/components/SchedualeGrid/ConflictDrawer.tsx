@@ -7,19 +7,28 @@ import {
   RotateCcw,
   User,
   ShieldAlert,
+  Sparkles,
 } from "lucide-react";
 import { useGlobalConflictStore } from "../../hooks/useGlobalConflictStore";
 import { cn } from "@/lib/utils";
 import { START_TIME_MINUTES } from "../../data/scheduleGrid";
+import type { DoctorType } from "../../types";
 
 interface ConflictDrawerProps {
   onConfirm: () => void;
   onCancel: () => void;
+  // تمرير مصفوفة الأطباء الحالية ودالة التحديث التابعة للمكون الأب (DNDGrid / useDragHandlers)
+  doctors: DoctorType[];
+  setDoctors: (updatedDoctors: DoctorType[]) => void;
 }
 
-export function ConflictDrawer({ onConfirm, onCancel }: ConflictDrawerProps) {
-  const { isDrawerOpen, conflictPayload, clearConflict } =
-    useGlobalConflictStore();
+export function ConflictDrawer({ onConfirm, onCancel, doctors, setDoctors }: ConflictDrawerProps) {
+  const {
+    isDrawerOpen,
+    conflictPayload,
+    clearConflict,
+    executeAutoResolution,
+  } = useGlobalConflictStore();
 
   if (!isDrawerOpen || !conflictPayload) return null;
 
@@ -29,6 +38,22 @@ export function ConflictDrawer({ onConfirm, onCancel }: ConflictDrawerProps) {
     const m = total % 60;
     const displayH = h === 0 || h === 12 ? 12 : h % 12;
     return `${displayH}:${m === 0 ? "00" : m < 10 ? "0" + m : m} ${h >= 12 ? "PM" : "AM"}`;
+  };
+  // معالج الضغط على زر التخفيف وحل النزاع الذكي
+  const handleAutoMitigate = () => {
+    executeAutoResolution(
+      doctors,
+      setDoctors,
+      (successMessage) => {
+        alert(`Success: ${successMessage}`);
+      },
+      (manualMessage) => {
+        // هنا يتم تنبيه المستخدم أن المسارات الآلية مغلقة وعليه الاختيار بنفسه
+        alert(
+          `Notice: ${manualMessage} Please choose 'Force Overlap' or Reschedule manually.`,
+        );
+      },
+    );
   };
 
   return (
@@ -68,7 +93,13 @@ export function ConflictDrawer({ onConfirm, onCancel }: ConflictDrawerProps) {
             force-confirm positions.
           </span>
         </div>
-
+        <button
+          onClick={handleAutoMitigate}
+          className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-98 cursor-pointer border-none"
+        >
+          <Sparkles className="w-4 h-4 text-blue-200" />
+          <span>⚡ Run Auto-Mitigation Engine</span>
+        </button>
         {/* List of Affected Appointments */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {conflictPayload.conflictingItems.map((item) => {

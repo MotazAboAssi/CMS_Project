@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import type { DoctorWithApts } from "@/features/dashboardAssitant/types";
+import type { DoctorType } from "@/features/dashboardAssitant/types";
 import { useWizardDrawer } from "../hooks/useWizardDrawer";
 import { START_TIME_MINUTES } from "../data/scheduleGrid";
 
@@ -105,7 +105,7 @@ export const TREATMENT_OPTIONS: TreatmentOption[] = [
 ];
 
 export function useAppointmentWizard(
-  doctors: DoctorWithApts[],
+  doctors: DoctorType[],
   onSave: (data?: WizardFormData & { price: number }) => void,
   onClose: () => void,
 ) {
@@ -282,9 +282,7 @@ export function useAppointmentWizard(
       doctors
         .map((doc) => {
           // جمع كل مواعيد الطبيب لليوم (تأكد من استخدام الخاصية الصحيحة سواء كانت appointments أو columnAppointments)
-          const docAppointments =
-            doc.appointments || doc.columnAppointments || [];
-
+          const docAppointments = doc.appointments || [];
           const dailyCount = docAppointments.length;
 
           // 3. الفحص الدقيق للتضارب:

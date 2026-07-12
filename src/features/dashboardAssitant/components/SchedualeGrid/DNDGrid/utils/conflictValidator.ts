@@ -1,6 +1,6 @@
 
 import { TOTAL_SLOTS, ROW_MINUTES } from "@/features/dashboardAssitant/data/scheduleGrid";
-import type { DoctorWithApts, ExtendedAppointmentType } from "@/features/dashboardAssitant/types";
+import type { DoctorType, AppointmentType } from "@/features/dashboardAssitant/types";
 
 /**
  * Checks if a given time range conflicts with any existing appointment for a specific doctor
@@ -9,7 +9,7 @@ export function hasSchedulingConflict(
   start: number,
   end: number,
   docId: string,
-  allDoctors: DoctorWithApts[],
+  allDoctors: DoctorType[],
   excludeAptId?: string
 ): boolean {
   const doctor = allDoctors.find((d) => d.id === docId);
@@ -27,9 +27,9 @@ export function hasSchedulingConflict(
  * Filters and returns doctors eligible for appointment transfer
  */
 export function getAvailableDoctorsForTransfer(
-  apt: ExtendedAppointmentType,
-  allDoctors: DoctorWithApts[]
-): DoctorWithApts[] {
+  apt: AppointmentType,
+  allDoctors: DoctorType[]
+): DoctorType[] {
   return allDoctors.filter((doctor) => {
     // 1. Exclude the patient's currently responsible doctor
     if (doctor.id === apt.docId) return false;
@@ -44,8 +44,8 @@ export function getAvailableDoctorsForTransfer(
  * Calculates valid intervals (multiples of 15 mins) for moving an appointment earlier
  */
 export function getValidEarlierIntervals(
-  apt: ExtendedAppointmentType,
-  allDoctors: DoctorWithApts[]
+  apt: AppointmentType,
+  allDoctors: DoctorType[]
 ): number[] {
   const intervals: number[] = [];
   const currentDuration = apt.end - apt.start;
@@ -69,8 +69,8 @@ export function getValidEarlierIntervals(
  * Calculates valid intervals (multiples of 15 mins) for moving an appointment later
  */
 export function getValidLaterIntervals(
-  apt: ExtendedAppointmentType,
-  allDoctors: DoctorWithApts[]
+  apt: AppointmentType,
+  allDoctors: DoctorType[]
 ): number[] {
   const intervals: number[] = [];
   const currentDuration = apt.end - apt.start;

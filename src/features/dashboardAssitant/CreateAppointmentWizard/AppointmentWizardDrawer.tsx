@@ -14,15 +14,12 @@ import { Step3ReviewSummary } from "./Step3ReviewSummary";
 
 import { useWizardDrawer } from "../hooks/useWizardDrawer";
 import StepperCustome from "./StepperCustome";
-import type {
-  ColumnAppointmentsType,
-  DoctorWithApts,
-} from "../types";
+import type { AppointmentType, DoctorType } from "../types";
 import { usePendingRequest } from "../hooks/usePendingRequest";
 
 interface AppointmentWizardDrawerProps {
-  doctors: DoctorWithApts[]; //[cite: 16]
-  onExecuteCreation: (newApt: ColumnAppointmentsType) => void; //[cite: 16]
+  doctors: DoctorType[]; //[cite: 16]
+  onExecuteCreation: (newApt: AppointmentType) => void; //[cite: 16]
 }
 
 export function AppointmentWizardDrawer({
@@ -47,14 +44,26 @@ export function AppointmentWizardDrawer({
         TREATMENT_OPTIONS.find((t) => t.id === wizardData.treatmentId)?.name || //[cite: 16]
         ""; //[cite: 16]
 
-      const newApt: ColumnAppointmentsType = {
+      const newApt = {
         id: `apt-${Date.now()}`, //[cite: 16]
         docId: wizardData.doctorId, //[cite: 16]
         title: `${wizardData.patientName} - ${treatmentName}`, //[cite: 16]
         start: wizardData.timeSlot || 0, //[cite: 16]
         end: (wizardData.timeSlot || 0) + wizardData.duration, //[cite: 16]
-        status: wizardData.complexity === "urgent" ? "urgent" : "confirmed", //[cite: 16]
-        phone: wizardData.patientPhone || "", //[cite: 16]
+        status: wizardData.complexity === "urgent" ? "urgent" : "confirmed",
+        treatmentId: wizardData.treatmentId,
+        complexity: wizardData.complexity,
+        duration: wizardData.duration,
+        isLockedToDoctor: wizardData.isLockedToDoctor,
+        price: 0,
+        patient: {
+          name: wizardData.patientName,
+          age: Number.parseInt(wizardData.patientAge),
+          phone: wizardData.patientPhone,
+          gender: wizardData.patientGender,
+          adddress: wizardData.patientAddress,
+        },
+        refuseTransfer: false,
       };
 
       onExecuteCreation(newApt); // تحديث شبكة المواعيد فوراً[cite: 16]
