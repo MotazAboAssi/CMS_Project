@@ -29,6 +29,8 @@ import type { PendingRequest } from "../../types";
 
 import { useWizardDrawer } from "../../hooks/useWizardDrawer";
 import { usePendingRequest } from "../../hooks/usePendingRequest";
+import { useDragHandlers } from "../SchedualeGrid/DNDGrid/hooks/useDragHandlers";
+import { formatMinutesToAMPM } from "../SchedualeGrid/DNDGrid/utils/timeFormatters";
 
 export function PendingRequestSection() {
   const isEditMode = useEditeMode((state) => state.isEditMode);
@@ -66,8 +68,11 @@ export function PendingRequestSection() {
 
   const activeItem = requests.find((r) => r.id === activeId);
 
-  if(requests.length == 0)
-    return null
+  if (requests.length == 0) return null;
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { doctors } = useDragHandlers();
+  const doctor = doctors.find((doc) => doc.id == activeItem?.docId);
   return (
     <div className="flex-1 flex flex-col min-h-0 p-5">
       <div className="flex items-center justify-between mb-4 shrink-0">
@@ -97,12 +102,12 @@ export function PendingRequestSection() {
             strategy={verticalListSortingStrategy}
           >
             {requests.map((item) => (
-                  <SortableRequestCard
-                    key={item.id}
-                    item={item}
-                    isEditMode={isEditMode}
-                  />
-                ))}
+              <SortableRequestCard
+                key={item.id}
+                item={item}
+                isEditMode={isEditMode}
+              />
+            ))}
           </SortableContext>
 
           <DragOverlay dropAnimation={null}>
@@ -115,25 +120,25 @@ export function PendingRequestSection() {
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0 flex-1">
                       <h5 className="text-xs font-bold text-neutral-900 truncate">
-                        {activeItem.patientName}
+                        {activeItem.patient.name}
                       </h5>
                       <p className="flex items-center text-[11px] text-neutral-400 font-medium mt-0.5 gap-1 truncate">
                         <Calendar className="w-3 h-3 text-neutral-400 shrink-0" />{" "}
-                        {activeItem.doctorName}
+                        {doctor?.name}
                       </p>
                     </div>
                     <span className="text-[10px] font-bold text-[#0066ff] bg-blue-50/70 border border-blue-100 px-1.5 py-0.5 rounded-md shrink-0">
-                      {activeItem.timeAgo}
+                      {formatTimeAgo(activeItem.timeRequistAgo)}
                     </span>
                   </div>
                   <div className="flex flex-col justify-between text-[11px] font-semibold text-neutral-500 mt-2">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3 text-neutral-400" />{" "}
-                      {activeItem.date}
+                      {activeItem.date.toDateString()}
                     </div>
                     <div className="flex items-center gap-1 mt-0.5">
                       <Clock className="w-3 h-3 text-neutral-400" />{" "}
-                      {activeItem.time}
+                      {formatMinutesToAMPM(activeItem.start)}
                     </div>
                   </div>
                 </div>
@@ -149,6 +154,17 @@ export function PendingRequestSection() {
 interface SortableCardProps {
   item: PendingRequest;
   isEditMode: boolean;
+}
+
+function formatTimeAgo(minutesAgo: number): string {
+  if (minutesAgo <= 0) return "now";
+  // إذا كان الوقت أقل من ساعة (60 دقيقة)
+  if (minutesAgo < 60) return `${minutesAgo} Min Ago`;
+  const hoursAgo = Math.floor(minutesAgo / 60);
+  // إذا كان الوقت أقل من يوم (1440 دقيقة)
+  if (hoursAgo < 24) return `${hoursAgo} Hours Ago`;
+  const daysAgo = Math.floor(hoursAgo / 24);
+  return `${daysAgo} Day Ago`;
 }
 
 function SortableRequestCard({ item, isEditMode }: SortableCardProps) {
@@ -172,6 +188,10 @@ function SortableRequestCard({ item, isEditMode }: SortableCardProps) {
     transition,
     opacity: isDragging ? 0.3 : 1,
   };
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { doctors } = useDragHandlers();
+  const doctor = doctors.find((doc) => doc.id == item.docId);
 
   return (
     <div
@@ -202,24 +222,26 @@ function SortableRequestCard({ item, isEditMode }: SortableCardProps) {
         <div className="flex justify-between items-start gap-2">
           <div className="min-w-0 flex-1">
             <h5 className="text-xs font-bold text-neutral-900 truncate">
-              {item.patientName}
+              {item.patient.name}
             </h5>
             <p className="flex items-center text-[11px] text-neutral-400 font-medium mt-0.5 gap-1 truncate">
               <Calendar className="w-3 h-3 text-neutral-400 shrink-0" />{" "}
-              {item.doctorName}
+              {doctor?.name}
             </p>
           </div>
           <span className="text-[10px] font-bold text-[#0066ff] bg-blue-50/70 border border-blue-100 px-1.5 py-0.5 rounded-md shrink-0">
-            {item.timeAgo}
+            {formatTimeAgo(item.timeRequistAgo)}
           </span>
         </div>
 
         <div className="flex flex-col justify-between text-[11px] font-semibold text-neutral-500 mt-2">
           <div className="flex items-center gap-1">
-            <Calendar className="w-3 h-3 text-neutral-400" /> {item.date}
+            <Calendar className="w-3 h-3 text-neutral-400" />{" "}
+            {item.date.toDateString()}
           </div>
           <div className="flex items-center gap-1 mt-0.5">
-            <Clock className="w-3 h-3 text-neutral-400" /> {item.time}
+            <Clock className="w-3 h-3 text-neutral-400" />{" "}
+            {formatMinutesToAMPM(item.start)}
           </div>
         </div>
 

@@ -1,3 +1,5 @@
+import type { ComplexityType } from "../CreateAppointmentWizard/useAppointmentWizard";
+
 export interface AppointmentType {
   // 🆔 الحقول الأساسية لمحرك الجدولة والـ Drag and Drop
   id: string;
@@ -9,7 +11,7 @@ export interface AppointmentType {
 date:Date;
   // 🦷 تفاصيل العلاج والزيارة الطبية (Extracted from summaryRows)
   treatmentId: string; // معرّف العلاج المختار
-  complexity: "standard" | "complex" | "elderly" | "urgent"; // درجة التعقيد
+  complexity: ComplexityType; // درجة التعقيد
   duration: number; // مدة الموعد بالدقائق الفردية
   price: number; // السعر محسوباً بالعملة المحلية SYP
   notes?: string; // ملاحظات إضافية تم تدوينها

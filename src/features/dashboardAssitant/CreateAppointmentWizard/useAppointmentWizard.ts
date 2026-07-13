@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import type { DoctorType } from "@/features/dashboardAssitant/types";
 import { useWizardDrawer } from "../hooks/useWizardDrawer";
 import { START_TIME_MINUTES } from "../data/scheduleGrid";
+import { formatMinutesToAMPM } from "../components/SchedualeGrid/DNDGrid/utils/timeFormatters";
 
 export interface TreatmentOption {
   id: string;
@@ -54,7 +55,7 @@ const INITIAL_FORM_DATA: WizardFormData = {
   patientGender: null,
   patientAddress: "",
   isExistingPatient: false,
-  duration: 15, 
+  duration: 15,
 };
 
 // Sample Database for Autocomplete Queries
@@ -152,25 +153,25 @@ export function useAppointmentWizard(
       } else if (pendingRequestData) {
         // 🔵 الحالة الخاصة بـ Pending Request الإضافية
         const matchedDoctor = doctors.find(
-          (doc) => doc.name === pendingRequestData.doctorName,
+          (doc) => doc.id === pendingRequestData.docId,
         );
 
         setFormData((prev) => ({
           ...prev,
           doctorId: matchedDoctor ? matchedDoctor.id : "",
-          date: new Date(),
-          treatmentId: "t1",
-          timeSlot: START_TIME_MINUTES + 60,
-          duration: 15,
-          complexity: "standard",
-          isLockedToDoctor: false,
-          patientName: pendingRequestData.patientName,
-          patientPhone: "0900 000 000",
-          patientAge: "30",
-          patientGender: "Male",
-          patientAddress: "Damascus",
+          date: pendingRequestData.date,
+          treatmentId: pendingRequestData.treatmentId,
+          timeSlot: pendingRequestData.start,
+          duration: pendingRequestData.duration,
+          complexity: pendingRequestData.complexity,
+          isLockedToDoctor: pendingRequestData.refuseTransfer,
+          patientName: pendingRequestData.patient.name,
+          patientPhone: pendingRequestData.patient.phone,
+          patientAge: pendingRequestData.patient.age.toString(),
+          patientGender: pendingRequestData.patient.gender,
+          patientAddress: pendingRequestData.patient.adddress,
           isExistingPatient: false,
-          notes: `Created via Pending Request assigned on ${pendingRequestData.date} ${pendingRequestData.time}`,
+          notes: `Created via Pending Request assigned on ${pendingRequestData.date} ${formatMinutesToAMPM(pendingRequestData.start)}`,
         }));
       }
     }

@@ -42,7 +42,7 @@ export function AppointmentWizardDrawer({
       if (!wizardData) return null; //[cite: 16]
       const treatmentName =
         TREATMENT_OPTIONS.find((t) => t.id === wizardData.treatmentId)?.name || //[cite: 16]
-        ""; //[cite: 16]  
+        ""; //[cite: 16]
       console.log(wizardData.date);
       const newApt: AppointmentType = {
         id: `apt-${Date.now()}`, //[cite: 16]
@@ -86,19 +86,14 @@ export function AppointmentWizardDrawer({
     if (!isWizardOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape")
-        handleSaveAppointment(wizard as unknown as WizardFormData);
+        // handleSaveAppointment(wizard as unknown as WizardFormData);
+        onClose();
       if (e.key === "Enter" && wizard.currentStep === 3)
         wizard.handleFinalSubmit();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    handleSaveAppointment,
-    isWizardOpen,
-    wizard,
-    wizard.currentStep,
-    wizard.formData,
-  ]);
+  }, [handleSaveAppointment, isWizardOpen, onClose, wizard, wizard.currentStep, wizard.formData]);
 
   if (!isWizardOpen) return null;
 
