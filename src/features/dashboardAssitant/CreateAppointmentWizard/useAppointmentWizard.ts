@@ -25,7 +25,7 @@ export interface PatientProfile {
 export interface WizardFormData {
   treatmentId: string;
   complexity: ComplexityType;
-  date: Date | null;
+  date: number;
   timeSlot: number | null;
   doctorId: string;
   isLockedToDoctor: boolean;
@@ -43,7 +43,7 @@ export interface WizardFormData {
 const INITIAL_FORM_DATA: WizardFormData = {
   treatmentId: "",
   complexity: "standard",
-  date: null,
+  date: Date.now(),
   timeSlot: null,
   doctorId: "",
   isLockedToDoctor: false,
@@ -134,10 +134,12 @@ export function useAppointmentWizard(
         ...prev,
         // الخطوة الأولى: بيانات الموعد
         doctorId: matchedDoctor ? matchedDoctor.id : "",
-        date: new Date(), // تعيين اليوم كافتراضي أو استخدام Date.parse إن كان متوافقاً
+        date: Date.now(), // تعيين اليوم كافتراضي أو استخدام Date.parse إن كان متوافقاً
         treatmentId: "t1", // تفضيل "Follow-up Visit" كافتراضي
         timeSlot: START_TIME_MINUTES + 60, // توقيت افتراضي أو يمكن تركه فارغاً ليعبئه المستخدم
         duration: 15,
+        complexity: "standard",
+        isLockedToDoctor: false,
 
         // الخطوة الثانية: بيانات المريض القادمة من الـ Request 🔥
         patientName: pendingRequestData.patientName,
@@ -251,22 +253,24 @@ export function useAppointmentWizard(
   }, [step2Errors]);
 
   const availableTimeSlots = useMemo(() => {
+    console.log('start slots')
     if (!formData.date || computedDuration === 0) return [];
     const slots: number[] = [];
     const DAY_START = START_TIME_MINUTES;
     const DAY_END = 1080;
-
+    
     for (let time = DAY_START; time + computedDuration <= DAY_END; time += 15) {
       const isAnyDoctorFree = doctors.some((doc) => {
         const appointments = doc.appointments || [];
         return !appointments.some(
           (apt) =>
             Math.max(time, apt.start) <
-            Math.min(time + computedDuration, apt.end),
+          Math.min(time + computedDuration, apt.end),
         );
       });
       if (isAnyDoctorFree) slots.push(time);
     }
+    console.log(slots)
     return slots;
   }, [formData.date, computedDuration, doctors]);
 

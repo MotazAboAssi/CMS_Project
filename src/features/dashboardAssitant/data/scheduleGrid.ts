@@ -14,6 +14,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     duration: 45,
     price: 150000,
     notes: "Check periapical healing.",
+    date: Date.now(),
     patient: {
       name: "Ahmad Mansour",
       age: 34,
@@ -35,6 +36,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     duration: 60,
     price: 350000,
     notes: "Severe impaction on lower left molar.",
+    date: Date.now(),
     patient: {
       name: "Sana Barakat",
       age: 22,
@@ -56,6 +58,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     duration: 60,
     price: 1800000,
     notes: "Abutment placement.",
+    date: Date.now(),
     patient: {
       name: "Omar Kabani",
       age: 45,
@@ -76,6 +79,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     complexity: "standard",
     duration: 20,
     price: 40000,
+    date: Date.now(),
     patient: {
       name: "Lina Sawas",
       age: 29,
@@ -99,6 +103,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     duration: 30,
     price: 75000,
     notes: "Patient has high blood pressure.",
+    date: Date.now(),
     patient: {
       name: "Kamal Al-Husseini",
       age: 72,
@@ -119,6 +124,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     complexity: "complex",
     duration: 60,
     price: 1200000,
+    date: Date.now(),
     patient: {
       name: "Nour Al-Huda",
       age: 28,
@@ -139,6 +145,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     complexity: "standard",
     duration: 60,
     price: 450000,
+    date: Date.now(),
     patient: {
       name: "Rania Haddad",
       age: 31,
@@ -159,6 +166,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     complexity: "standard",
     duration: 45,
     price: 110000,
+    date: Date.now(),
     patient: {
       name: "Hassan Zein",
       age: 40,
@@ -166,7 +174,7 @@ export const APPOINTMENTS: AppointmentType[] = [
       gender: "Male",
       adddress: "Aleppo, Mogambo",
     },
-    refuseTransfer: false
+    refuseTransfer: false,
   },
 
   // --- DR. FADI KHOURY (doc-3) ---
@@ -182,6 +190,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     duration: 30,
     price: 180000,
     notes: "Requires behavioral management.",
+    date: Date.now(),
     patient: {
       name: "Youssef Idlibi",
       age: 8,
@@ -202,6 +211,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     complexity: "standard",
     duration: 30,
     price: 90000,
+    date: Date.now(),
     patient: {
       name: "Maya Nassar",
       age: 6,
@@ -222,6 +232,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     complexity: "standard",
     duration: 45,
     price: 220000,
+    date: Date.now(),
     patient: {
       name: "Jad Rahal",
       age: 7,
@@ -242,6 +253,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     complexity: "standard",
     duration: 30,
     price: 80000,
+    date: Date.now(),
     patient: {
       name: "Tala Murad",
       age: 10,
@@ -265,6 +277,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     duration: 30,
     price: 130000,
     notes: "Upper arch wire change to 0.016 NiTi.",
+    date: Date.now(),
     patient: {
       name: "Fadi Bishara",
       age: 17,
@@ -286,6 +299,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     duration: 60,
     price: 500000,
     notes: "Removal of brackets + retainer delivery.",
+    date: Date.now(),
     patient: {
       name: "Salma Tabaa",
       age: 24,
@@ -306,6 +320,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     complexity: "standard",
     duration: 30,
     price: 95000,
+    date: Date.now(),
     patient: {
       name: "Karam Al-Jundi",
       age: 13,
@@ -326,6 +341,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     complexity: "standard",
     duration: 30,
     price: 75000,
+    date: Date.now(),
     patient: {
       name: "Zena Wazzan",
       age: 15,
@@ -349,6 +365,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     duration: 60,
     price: 650000,
     notes: "Final wash impression for lower jaw.",
+    date: Date.now(),
     patient: {
       name: "Samir Kabbani",
       age: 76,
@@ -370,6 +387,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     duration: 90,
     price: 2400000,
     notes: "Prepping teeth 14 to 16.",
+    date: Date.now(),
     patient: {
       name: "Ghalia Rizk",
       age: 52,
@@ -391,6 +409,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     duration: 30,
     price: 0,
     notes: "Emergency slot blocked out.",
+    date: Date.now(),
     patient: {
       name: "Anonymous Emergency",
       age: 0,
@@ -411,6 +430,7 @@ export const APPOINTMENTS: AppointmentType[] = [
     complexity: "standard",
     duration: 45,
     price: 450000,
+    date: Date.now(),
     patient: {
       name: "Waleed Darwish",
       age: 41,
@@ -486,7 +506,7 @@ export const informationPanelData = [
 ];
 
 export const ROW_MINUTES = 15;
-export const START_TIME_MINUTES = 45 * 60; // 9:00 AM
+export const START_TIME_MINUTES = 8 * 60; // 9:00 AM
 export const TOTAL_HOURS = 24;
 export const TOTAL_SLOTS = (TOTAL_HOURS * 60) / ROW_MINUTES;
 export const SLOT_HEIGHT = 44;

@@ -6,7 +6,7 @@ export interface AppointmentType {
   docId: string; // معرّف الطبيب المسؤول
   status: string; // حالة الموعد (confirmed, urgent, in_progress, unavailable)
   title?: string; // عنوان أو اسم الإجراء الطبي
-
+date:number;
   // 🦷 تفاصيل العلاج والزيارة الطبية (Extracted from summaryRows)
   treatmentId: string; // معرّف العلاج المختار
   complexity: "standard" | "complex" | "elderly" | "urgent"; // درجة التعقيد

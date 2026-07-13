@@ -37,8 +37,6 @@ export function useDragHandlers() {
       ...doc,
       appointments: APPOINTMENTS.map((apt) => ({
         ...apt,
-        date: "5/5/2026",
-        phone: "0900 000 000",
       })).filter((apt) => apt.docId === doc.id),
     })),
   );

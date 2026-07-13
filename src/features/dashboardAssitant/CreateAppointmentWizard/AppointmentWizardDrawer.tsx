@@ -44,7 +44,7 @@ export function AppointmentWizardDrawer({
         TREATMENT_OPTIONS.find((t) => t.id === wizardData.treatmentId)?.name || //[cite: 16]
         ""; //[cite: 16]
 
-      const newApt = {
+      const newApt: AppointmentType = {
         id: `apt-${Date.now()}`, //[cite: 16]
         docId: wizardData.doctorId, //[cite: 16]
         title: `${wizardData.patientName} - ${treatmentName}`, //[cite: 16]
@@ -54,7 +54,6 @@ export function AppointmentWizardDrawer({
         treatmentId: wizardData.treatmentId,
         complexity: wizardData.complexity,
         duration: wizardData.duration,
-        isLockedToDoctor: wizardData.isLockedToDoctor,
         price: 0,
         patient: {
           name: wizardData.patientName,
@@ -64,6 +63,7 @@ export function AppointmentWizardDrawer({
           adddress: wizardData.patientAddress,
         },
         refuseTransfer: false,
+        date: wizardData.date,
       };
 
       onExecuteCreation(newApt); // تحديث شبكة المواعيد فوراً[cite: 16]

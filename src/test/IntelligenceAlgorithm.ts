@@ -23,6 +23,7 @@ const dummyDoctors: DoctorType[] = [
         duration: 60,
         price: 100,
         notes: "",
+        date: Date.now(),
         patient: {
           name: "John",
           age: 30,
@@ -44,6 +45,7 @@ const dummyDoctors: DoctorType[] = [
         duration: 65,
         price: 80,
         notes: "",
+        date: Date.now(),
         patient: {
           name: "Jane",
           age: 25,
@@ -80,6 +82,7 @@ const dummyDoctors: DoctorType[] = [
         duration: 60,
         price: 120,
         notes: "",
+        date: Date.now(),
         patient: {
           name: "Alice",
           age: 40,
@@ -93,7 +96,6 @@ const dummyDoctors: DoctorType[] = [
   },
 ];
 export function testIntelligenceAlgorithm() {
-
   // ----- Test Cases -----
 
   // 1. Shift Down (same doctor, later slot available)
@@ -110,6 +112,7 @@ export function testIntelligenceAlgorithm() {
     duration: 60,
     price: 150,
     notes: "",
+    date: Date.now(),
     patient: {
       name: "Bob",
       age: 50,
@@ -138,6 +141,8 @@ export function testIntelligenceAlgorithm() {
     duration: 30,
     price: 90,
     notes: "",
+    date: Date.now(),
+
     patient: {
       name: "Carol",
       age: 35,
@@ -166,6 +171,8 @@ export function testIntelligenceAlgorithm() {
     duration: 60,
     price: 130,
     notes: "",
+    date: Date.now(),
+
     patient: {
       name: "Dave",
       age: 45,
@@ -194,6 +201,8 @@ export function testIntelligenceAlgorithm() {
     duration: 40,
     price: 70,
     notes: "",
+    date: Date.now(),
+
     patient: {
       name: "Eve",
       age: 28,

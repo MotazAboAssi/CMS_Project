@@ -46,9 +46,11 @@ export function Step1TreatmentInfo({
   const [showTreatDropdown, setShowTreatDropdown] = useState(false);
   const [showDocDropdown, setShowDocDropdown] = useState(false);
 
+  console.log(`available time slots : ${availableTimeSlots.toString()}`)
+
   const handleDateSelect = (day: number) => {
     const selected = new Date(day);
-    handleFieldChange("date", selected);
+    handleFieldChange("date", selected.getDate());
   };
 
   console.log(formData.duration)
@@ -149,8 +151,8 @@ export function Step1TreatmentInfo({
         </label>
         <Calendar
           mode="single"
-          selected={formData.date!}
-          defaultMonth={formData.date!}
+          selected={new Date(formData.date!)}
+          defaultMonth={new Date(formData.date!)}
           captionLayout="label"
           onSelect={(date) =>
             date && handleDateSelect(Date.parse(date.toString()))
