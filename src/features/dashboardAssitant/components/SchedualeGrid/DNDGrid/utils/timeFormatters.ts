@@ -26,7 +26,7 @@ export const formatDisplayTimeRange = (
 export function formatMinutesToAMPM(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  const ampm = hours >= 12 ? "PM" : "AM";
+  const ampm = Math.floor(hours / 12) % 2 == 1 ? "PM" : "AM";
   const displayHour = hours % 12 === 0 ? 12 : hours % 12;
   return `${String(displayHour).padStart(2, "0")}:${String(mins).padStart(2, "0")} ${ampm}`;
 }

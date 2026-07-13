@@ -1,13 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import {
   TREATMENT_OPTIONS,
   type ComplexityType,
   type WizardFormData,
 } from "./useAppointmentWizard";
-import {
-  formatMinutesToAMPM,
-} from "../components/SchedualeGrid/DNDGrid/utils/timeFormatters";
+import { formatMinutesToAMPM } from "../components/SchedualeGrid/DNDGrid/utils/timeFormatters";
 import type { AppointmentType } from "../types";
 import { Calendar } from "@/components/ui/calendar";
 
@@ -43,18 +41,24 @@ export function Step1TreatmentInfo({
   setSearchTreatment,
   handleFieldChange,
 }: Step1TreatmentInfoType) {
+  // eslint-disable-next-line react-hooks/purity
+  const now: number = useMemo(() => Date.now(), []);
+
   const [showTreatDropdown, setShowTreatDropdown] = useState(false);
   const [showDocDropdown, setShowDocDropdown] = useState(false);
 
-  console.log(`available time slots : ${availableTimeSlots.toString()}`)
-
   const handleDateSelect = (day: number) => {
-    const selected = new Date(day);
-    handleFieldChange("date", selected.getDate());
+    const date = new Date(day);
+    handleFieldChange("date", date);
   };
 
-  console.log(formData.duration)
+  const nowDate = new Date();
 
+  if (
+    formData.timeSlot &&
+    formData.timeSlot <= nowDate.getHours() * 60 + nowDate.getMinutes()
+  )
+    handleFieldChange("timeSlot", null);
   return (
     <div className="space-y-5  select-none animate-in fade-in duration-200">
       {/* 1. Treatment Dropdown Slot */}
@@ -70,7 +74,7 @@ export function Step1TreatmentInfo({
           <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
           <span>
             {TREATMENT_OPTIONS.find((t) => {
-              console.log(formData.treatmentId);
+              // console.log(formData.treatmentId);
               return t.id === formData.treatmentId;
             })
               ? TREATMENT_OPTIONS.find((t) => t.id === formData.treatmentId)
@@ -151,8 +155,11 @@ export function Step1TreatmentInfo({
         </label>
         <Calendar
           mode="single"
-          selected={new Date(formData.date!)}
-          defaultMonth={new Date(formData.date!)}
+          disabled={{
+            before: new Date(), // Disables all past dates
+          }}
+          selected={new Date(formData.date ?? now)}
+          defaultMonth={new Date(formData.date ?? now)}
           captionLayout="label"
           onSelect={(date) =>
             date && handleDateSelect(Date.parse(date.toString()))

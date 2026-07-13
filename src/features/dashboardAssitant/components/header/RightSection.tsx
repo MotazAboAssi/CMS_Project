@@ -131,7 +131,7 @@ export function RightSection() {
           <button className="w-9.5 h-9.5 rounded-xl border border-neutral-200 flex items-center justify-center relative hover:bg-neutral-50 text-neutral-600 transition-colors cursor-pointer focus:outline-none">
             <Bell className="w-4 h-4" />
             {hasUnread && (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white animate-pulse" />
+              <span title="exist notifications not read" className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white animate-pulse" />
             )}
           </button>
         </PopoverTrigger>

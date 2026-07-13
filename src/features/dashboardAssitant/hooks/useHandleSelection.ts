@@ -4,6 +4,7 @@ import type { SelectionType } from "../types";
 import { APPOINTMENTS, ROW_MINUTES } from "../data/scheduleGrid";
 // 1️⃣ استيراد هوك الـ Wizard لفتحه عند الحاجة
 import { useWizardDrawer } from "./useWizardDrawer";
+import { useHandleDatePicker } from "./useHandleDatePicker";
 
 interface HandleSelectionState {
   selection: SelectionType;
@@ -61,12 +62,17 @@ export const useHandleSelection = create<HandleSelectionState>((set) => {
           // // حساب المدة بناءً على عدد الخلايا المحددة (كل خلية = 15 دقيقة)
           // const duration = (maxSlot - minSlot + 1) * 15;
           // منطق مقترح داخل handleCreateAppointment
-          const duration = (Math.abs(state.selection.endSlot - state.selection.startSlot) + 1) * 15;
-         
+          const duration =
+            (Math.abs(state.selection.endSlot - state.selection.startSlot) +
+              1) *
+            15;
+          const date = useHandleDatePicker((state) => state.date);
+
           useWizardDrawer.getState().onOpenNewAppointment({
             doctorId: state.selection.docId,
             timeSlot: minSlot * ROW_MINUTES,
-            duration : duration, // إرسال المدة المحسوبة
+            duration: duration, // إرسال المدة المحسوبة
+            date: date,
           });
           // تحديث قيمة duration في الـ Wizard لاحقاً عبر initialData
           return { selection: null };

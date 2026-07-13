@@ -23,9 +23,11 @@ export function DoctorsColumnLayout({
   overSlotInfo,
 }: DoctorsColumnLayoutProps): React.ReactNode {
   const selection = useHandleSelection((state) => state.selection);
-  const conflictPayload = useGlobalConflictStore((state) => state.conflictPayload);
+  const conflictPayload = useGlobalConflictStore(
+    (state) => state.conflictPayload,
+  );
 
-return doctors.map((doctor) => {
+  return doctors.map((doctor) => {
     const columnAppointments = doctor.appointments || [];
     const hasSelectionInColumn = selection?.docId === doctor.id;
 
@@ -40,15 +42,22 @@ return doctors.map((doctor) => {
 
     // 🧠 التحقق مما إذا كان هناك نزاع نشط يخص طبيب آخر لتعتيم هذا العمود
     const isAnyConflictActive = !!conflictPayload;
-    const isThisDoctorConflicted = conflictPayload?.targetDoctorId === doctor.id;
+    const isThisDoctorConflicted =
+      conflictPayload?.targetDoctorId === doctor.id;
 
     return (
-<div
+      <div
         key={doctor.id}
-        className={cn("h-full relative z-10 transition-all duration-300", DOCTOR_COL_WIDTH)}
+        className={cn(
+          "h-full relative z-10 transition-all duration-300",
+          DOCTOR_COL_WIDTH,
+        )}
         style={{
           opacity: isAnyConflictActive && !isThisDoctorConflicted ? 0.25 : 1,
-          filter: isAnyConflictActive && !isThisDoctorConflicted ? "blur(0.8px)" : "none",
+          filter:
+            isAnyConflictActive && !isThisDoctorConflicted
+              ? "blur(0.8px)"
+              : "none",
         }}
       >
         {/* طبقة الخلايا الزمنية الفارغة */}
@@ -62,6 +71,7 @@ return doctors.map((doctor) => {
           hasSelectionInColumn={hasSelectionInColumn}
           selectionHeight={selectionHeight}
           selectionTop={selectionTop}
+          doctorId={doctor.id} // 👈 نمرر id الطبيب الخاص بالعمود الحالي
         />
 
         {/* المواعيد المحجوزة الحالية وتأثير الإسقاط */}

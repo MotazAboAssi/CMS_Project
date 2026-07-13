@@ -25,7 +25,7 @@ export interface PatientProfile {
 export interface WizardFormData {
   treatmentId: string;
   complexity: ComplexityType;
-  date: number;
+  date: Date;
   timeSlot: number | null;
   doctorId: string;
   isLockedToDoctor: boolean;
@@ -43,7 +43,7 @@ export interface WizardFormData {
 const INITIAL_FORM_DATA: WizardFormData = {
   treatmentId: "",
   complexity: "standard",
-  date: Date.now(),
+  date: new Date(),
   timeSlot: null,
   doctorId: "",
   isLockedToDoctor: false,
@@ -54,7 +54,7 @@ const INITIAL_FORM_DATA: WizardFormData = {
   patientGender: null,
   patientAddress: "",
   isExistingPatient: false,
-  duration: 15,
+  duration: 15, 
 };
 
 // Sample Database for Autocomplete Queries
@@ -115,51 +115,72 @@ export function useAppointmentWizard(
   const [searchDoctor, setSearchDoctor] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDuplicatePhone, setIsDuplicatePhone] = useState(false);
-  // const initialData = useWizardDrawer((state) => state.initialData);
   const isWizardOpen = useWizardDrawer((state) => state.isWizardOpen);
-
   const pendingRequestData = useWizardDrawer(
     (state) => state.pendingRequestData,
   );
-  // بوابة التحويل والمزامنة عند فتح الـ Wizard عبر النقر على خلية الجدول
+
+  // بوابة المزامنة عند فتح الـ Wizard
+  // ابحث عن الـ useEffect الخاص بالمزامنة واستبدله بهذا التعديل:
+  const initialData = useWizardDrawer((state) => state.initialData);
+
   useEffect(() => {
-    if (isWizardOpen && pendingRequestData) {
-      // التحقق من هوية الطبيب بربط الاسم بالـ ID إن أمكن، أو تركها فارغة ليختارها المستخدم في الخطوة الأولى
-      const matchedDoctor = doctors.find(
-        (doc) => doc.name === pendingRequestData.doctorName,
-      );
+    if (isWizardOpen) {
+      if (initialData) {
+        console.log(
+          `new Date(initialData.date).toDateString():${new Date(initialData.date).toDateString()}`,
+        );
+        // 🟢 التعبئة التلقائية الفورية وحل مشكلة عدم تحديد الطبيب والوقت
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setFormData((prev) => ({
+          ...prev,
+          treatmentId: "t1", // علاج افتراضي أولي لتجنب الفراغ
+          complexity: "standard",
+          date: initialData.date,
+          timeSlot: initialData.timeSlot, // تعيين وقت البداية الحقيقي المحسوب بدقة
+          duration: initialData.duration, // تعيين المدة الإجمالية من طول السحب
+          doctorId: initialData.doctorId, // تثبيت معرّف الطبيب الصحيح للعمود
+          isLockedToDoctor: true,
+          patientName: "",
+          patientPhone: "",
+          patientAge: "",
+          patientGender: null,
+          patientAddress: "",
+          isExistingPatient: false,
+          notes: "",
+        }));
+      } else if (pendingRequestData) {
+        // 🔵 الحالة الخاصة بـ Pending Request الإضافية
+        const matchedDoctor = doctors.find(
+          (doc) => doc.name === pendingRequestData.doctorName,
+        );
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setFormData((prev) => ({
-        ...prev,
-        // الخطوة الأولى: بيانات الموعد
-        doctorId: matchedDoctor ? matchedDoctor.id : "",
-        date: Date.now(), // تعيين اليوم كافتراضي أو استخدام Date.parse إن كان متوافقاً
-        treatmentId: "t1", // تفضيل "Follow-up Visit" كافتراضي
-        timeSlot: START_TIME_MINUTES + 60, // توقيت افتراضي أو يمكن تركه فارغاً ليعبئه المستخدم
-        duration: 15,
-        complexity: "standard",
-        isLockedToDoctor: false,
-
-        // الخطوة الثانية: بيانات المريض القادمة من الـ Request 🔥
-        patientName: pendingRequestData.patientName,
-        patientPhone: "0900 000 000", // أو أي حقل افتراضي للهاتف إذا لم يتوفر في الـ PendingRequest
-        patientAge: "30", // عمر افتراضي للتخطي
-        patientGender: "Male",
-        patientAddress: "Damascus",
-        isExistingPatient: false,
-        notes: `Created via Pending Request assigned on ${pendingRequestData.date} ${pendingRequestData.time}`,
-      }));
+        setFormData((prev) => ({
+          ...prev,
+          doctorId: matchedDoctor ? matchedDoctor.id : "",
+          date: new Date(),
+          treatmentId: "t1",
+          timeSlot: START_TIME_MINUTES + 60,
+          duration: 15,
+          complexity: "standard",
+          isLockedToDoctor: false,
+          patientName: pendingRequestData.patientName,
+          patientPhone: "0900 000 000",
+          patientAge: "30",
+          patientGender: "Male",
+          patientAddress: "Damascus",
+          isExistingPatient: false,
+          notes: `Created via Pending Request assigned on ${pendingRequestData.date} ${pendingRequestData.time}`,
+        }));
+      }
     }
-  }, [isWizardOpen, pendingRequestData, doctors]);
+  }, [isWizardOpen, pendingRequestData, initialData, doctors]);
 
   const selectedTreatment = useMemo(() => {
     return TREATMENT_OPTIONS.find((t) => t.id === formData.treatmentId) || null;
   }, [formData.treatmentId]);
 
-  // استبدل الـ computedDuration القديم بهذا الـ Memo
   const computedDuration = useMemo(() => {
-    // الاعتماد الآن على القيمة المخزنة في الـ state مباشرة
     return formData.duration;
   }, [formData.duration]);
 
@@ -168,7 +189,6 @@ export function useAppointmentWizard(
     return selectedTreatment.basePrice;
   }, [selectedTreatment]);
 
-  // Real-time Autocomplete Filter Matching Engine
   const filteredPatients = useMemo(() => {
     if (!searchQuery.trim()) return [];
     return MOCK_PATIENT_DATABASE.filter((p) =>
@@ -195,7 +215,6 @@ export function useAppointmentWizard(
         next.doctorId = "";
       }
 
-      // Real-time Duplicate Phone Detection Loop
       if (field === "patientPhone") {
         const cleanedPhone = (value as string).replace(/\s+/g, "");
         const holdsDuplicate = MOCK_PATIENT_DATABASE.some(
@@ -210,7 +229,6 @@ export function useAppointmentWizard(
     });
   };
 
-  // Instant Autofill Execution Routine
   const selectPatientFromSearch = (patient: PatientProfile) => {
     setFormData((prev) => ({
       ...prev,
@@ -224,19 +242,80 @@ export function useAppointmentWizard(
     setSearchQuery("");
     setIsDuplicatePhone(false);
   };
+  const availableDoctorsFiltered = useMemo(() => {
+    // console.log(`formData.date : ${new Date(formData.date).toDateString()}`)
+    const targetDateStr = formData.date
+      ? new Date(formData.date).toDateString()
+      : "";
 
-  // Step 1 Validation Gate
-  const isStep1Valid = useMemo(() => {
-    return !!(
-      formData.treatmentId &&
-      formData.complexity &&
-      formData.date &&
-      formData.timeSlot !== null &&
-      formData.doctorId
+    return (
+      doctors
+        .map((doc) => {
+          // 1. استخراج مواعيد الطبيب الخاصة باليوم المختار فقط
+          const appointmentsToday = (doc.appointments || []).filter(
+            (apt) =>
+              apt.date && new Date(apt.date).toDateString() === targetDateStr,
+          );
+
+          const dailyCount = appointmentsToday.length;
+          let isAvailableAtSlot = true;
+
+          // 2. إذا حدد المستخدم تاريخ ووقت، نقوم بفحص التضارب لليوم والوقت والمدة بدقة
+          if (formData.date && formData.timeSlot !== null) {
+            const relativeStartTime = formData.timeSlot - START_TIME_MINUTES;
+            const relativeEndTime = relativeStartTime + computedDuration;
+
+            const hasConflict = appointmentsToday.some(
+              (apt) =>
+                relativeStartTime < apt.end && relativeEndTime > apt.start,
+            );
+            isAvailableAtSlot = !hasConflict;
+          }
+
+          return {
+            ...doc,
+            specialty: doc.specialty || "General Dentist",
+            appointmentsTodayCount: dailyCount,
+            isAvailableAtSlot: isAvailableAtSlot,
+            isAvailable: isAvailableAtSlot, // محاذاة الحالة لضمان التوافق البصري
+            appointments: appointmentsToday,
+          };
+        })
+        // 🔥 الفلترة الحقيقية: إذا تم اختيار وقت، لا تعرض إلا الطبيب المتاح فقط (تخفي أي طبيب غير متاح)
+        .filter((doc) => {
+          if (formData.timeSlot !== null) {
+            return (
+              doc.isAvailableAtSlot &&
+              doc.name.toLowerCase().includes(searchDoctor.toLowerCase())
+            );
+          }
+          return doc.name.toLowerCase().includes(searchDoctor.toLowerCase());
+        })
     );
-  }, [formData]);
+  }, [
+    formData.date,
+    formData.timeSlot,
+    computedDuration,
+    doctors,
+    searchDoctor,
+  ]);
+  // فحص حارس الخطوة الأولى: نتحقق من أن الطبيب متاح وصالح لتفعيل زر الـ Next
+  const isStep1Valid = useMemo(() => {
+    if (
+      !formData.treatmentId ||
+      !formData.complexity ||
+      !formData.date ||
+      formData.timeSlot === null ||
+      !formData.doctorId
+    ) {
+      return false;
+    }
+    const chosenDoc = availableDoctorsFiltered.find(
+      (d) => d.id === formData.doctorId,
+    );
+    return chosenDoc ? chosenDoc.isAvailableAtSlot : false;
+  }, [formData, availableDoctorsFiltered]);
 
-  // Comprehensive Step 2 Field Validation Errors Tracker
   const step2Errors = useMemo(() => {
     const ageValue = parseInt(formData.patientAge, 10);
     return {
@@ -247,67 +326,74 @@ export function useAppointmentWizard(
     };
   }, [formData, isDuplicatePhone]);
 
-  // Strict Step 2 State Validation Gate
   const isStep2Valid = useMemo(() => {
     return !Object.values(step2Errors).some(Boolean);
   }, [step2Errors]);
 
+  // حساب أوقات المواعيد المتاحة للعيادة
   const availableTimeSlots = useMemo(() => {
-    console.log('start slots')
     if (!formData.date || computedDuration === 0) return [];
+
     const slots: number[] = [];
-    const DAY_START = START_TIME_MINUTES;
-    const DAY_END = 1080;
-    
-    for (let time = DAY_START; time + computedDuration <= DAY_END; time += 15) {
+    const DAY_START_OFFICIAL = START_TIME_MINUTES; // بداية الدوام الرسمي للعيادة (مثلاً 480 دقيقة = 8:00 AM)
+    const DAY_END = START_TIME_MINUTES * 4; // نهاية الدوام الرسمي للعيادة (6:00 PM تعادل 1080 دقيقة من منتصف الليل)
+
+    // 1. حساب التاريخ المختار واليوم الحالي لمقارنتهما
+    const selectedDate = new Date(formData.date);
+    // console.log(selectedDate.toDateString())
+    const now = new Date();
+
+    const isToday = selectedDate.toDateString() === now.toDateString();
+    const targetDateStr = selectedDate.toDateString();
+
+    // 2. تحديد نقطة البداية للفحص:
+    let searchStartMinutes = DAY_START_OFFICIAL;
+
+    if (isToday) {
+      // 1. حساب الدقائق الحالية من منتصف الليل بشكل دقيق
+      const currentMinutesFromMidnight = now.getHours() * 60 + now.getMinutes();
+
+      // 2. تقريب الوقت الحالي لأقرب 15 دقيقة دائماً إلى الأعلى (مثال: 16 تصبح 30)
+      const roundedCurrentMinutes =
+        Math.ceil(currentMinutesFromMidnight / 15) * 15;
+
+      // 3. مقارنتها مع بداية الدوام الرسمي للعيادة
+      searchStartMinutes = Math.max(DAY_START_OFFICIAL, roundedCurrentMinutes);
+    }
+
+    // 3. حلقة توليد الفترات الزمنية المتاحة (Slots) بناءً على الـ Step (كل 15 دقيقة)
+    for (
+      let time = searchStartMinutes;
+      time + computedDuration <= DAY_END;
+      time += 15
+    ) {
       const isAnyDoctorFree = doctors.some((doc) => {
-        const appointments = doc.appointments || [];
-        return !appointments.some(
+        // جلب مواعيد الطبيب الخاصة باليوم المحدد فقط
+        const appointmentsToday = (doc.appointments || []).filter(
           (apt) =>
-            Math.max(time, apt.start) <
-          Math.min(time + computedDuration, apt.end),
+            apt.date && new Date(apt.date).toDateString() === targetDateStr,
+        );
+
+        // تحويل الوقت المطلق الحالي في الحلقة إلى وقت نسبي (Grid Relative) لمقارنته بأبعاد مواعيد الجدول الملتصقة بـ START_TIME_MINUTES
+        const relativeStart = time - START_TIME_MINUTES;
+        const relativeEnd = relativeStart + computedDuration;
+
+        // فحص التداخل الدقيق: Max(Start1, Start2) < Min(End1, End2)
+        return !appointmentsToday.some(
+          (apt) =>
+            Math.max(relativeStart, apt.start) < Math.min(relativeEnd, apt.end),
         );
       });
-      if (isAnyDoctorFree) slots.push(time);
+
+      if (isAnyDoctorFree) {
+        slots.push(time);
+      }
     }
-    console.log(slots)
+
     return slots;
   }, [formData.date, computedDuration, doctors]);
 
-  const availableDoctorsFiltered = useMemo(() => {
-    // 1. إذا لم يقم المستخدم باختيار وقت بعد، نعرض جميع الأطباء
-    if (!formData.date || formData.timeSlot === null) return doctors;
-
-    // 2. تحويل وقت المستخدم (المطلق) إلى وقت نسبي (Grid Relative) لمقارنته بمواعيد الطبيب الحالية المسجلة في الجدول
-    const relativeStartTime = formData.timeSlot - START_TIME_MINUTES;
-    const relativeEndTime = relativeStartTime + computedDuration;
-
-    return (
-      doctors
-        .map((doc) => {
-          // جمع كل مواعيد الطبيب لليوم (تأكد من استخدام الخاصية الصحيحة سواء كانت appointments أو columnAppointments)
-          const docAppointments = doc.appointments || [];
-          const dailyCount = docAppointments.length;
-
-          // 3. الفحص الدقيق للتضارب:
-          // يكون هناك تضارب إذا كان وقت بداية الموعد الجديد أصغر من وقت نهاية موعد حالي
-          // **و** وقت نهاية الموعد الجديد أكبر من وقت بداية الموعد الحالي.
-          const hasConflict = docAppointments.some(
-            (apt) => relativeStartTime < apt.end && relativeEndTime > apt.start,
-          );
-
-          return {
-            ...doc,
-            appointmentsTodayCount: dailyCount,
-            isAvailableAtSlot: !hasConflict, // الطبيب متوفر إذا لم يكن هناك تضارب
-            // افتراض أن الطبيب متاح للعمل بشكل عام (isAvailable) ما لم يكن لديك حقل صريح في الواجهة الخلفية ينفي ذلك
-            isAvailable: true,
-          };
-        })
-        // 4. تصفية القائمة النهائية: إظهار الأطباء المتاحين في هذا الوقت المحدد فقط
-        .filter((doc) => doc.isAvailableAtSlot && doc.isAvailable)
-    );
-  }, [formData.date, formData.timeSlot, computedDuration, doctors]);
+  // 🔥 تعديل جوهري: تصفية وحذف الطبيب المتعارض فوراً، وعرض الطبيب المتاح فقط!
 
   const handleNext = () => {
     if (currentStep === 1 && isStep1Valid) setCurrentStep(2);
@@ -318,15 +404,15 @@ export function useAppointmentWizard(
     if (currentStep === 2) setCurrentStep(1);
     else if (currentStep === 3) setCurrentStep(2);
   };
+
   const handleFinalSubmit = () => {
     if (isStep1Valid && isStep2Valid) {
-      // تحويل الوقت المطلق من منتصف الليل رجوعاً إلى دقائق نسبية خاصة بالجدول للحفاظ على أبعاد الرسم البياني
       const relativeTimeSlot =
         formData.timeSlot !== null ? formData.timeSlot - START_TIME_MINUTES : 0;
 
       onSave({
         ...formData,
-        timeSlot: relativeTimeSlot, // إرسال التوقيت النسبي المصحح (0-based)
+        timeSlot: relativeTimeSlot,
         duration: computedDuration,
         price: computedPrice,
       });

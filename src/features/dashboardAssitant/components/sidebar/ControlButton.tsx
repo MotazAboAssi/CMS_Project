@@ -42,7 +42,7 @@ export function ControlButton() {
     <div className="p-4 space-y-2.5 border-b border-neutral-100">
       <Button
         className="w-full h-11 bg-[#0066ff] hover:bg-[#0052cc] text-white font-bold rounded-xl shadow-sm justify-center px-4 text-xs "
-        onClick={() => onOpenNewAppointment}
+        onClick={() => onOpenNewAppointment()}
       >
         <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-200" />
         <span>New appointment</span>

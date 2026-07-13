@@ -42,8 +42,8 @@ export function AppointmentWizardDrawer({
       if (!wizardData) return null; //[cite: 16]
       const treatmentName =
         TREATMENT_OPTIONS.find((t) => t.id === wizardData.treatmentId)?.name || //[cite: 16]
-        ""; //[cite: 16]
-
+        ""; //[cite: 16]  
+      console.log(wizardData.date);
       const newApt: AppointmentType = {
         id: `apt-${Date.now()}`, //[cite: 16]
         docId: wizardData.doctorId, //[cite: 16]
