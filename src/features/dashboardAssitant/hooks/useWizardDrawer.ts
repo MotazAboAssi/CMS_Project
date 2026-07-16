@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { PendingRequest } from "../types";
+import type { PendingRequest, AppointmentType } from "../types";
 
 interface Type {
   isWizardOpen: boolean;
@@ -18,20 +18,53 @@ interface Type {
     duration: number;
     date: Date;
   } | null;
+  
+  // دمج أوضاع التعديل والقراءة فقط
+  editingAppointment: AppointmentType | null;
+  viewOnlyMode: boolean;
+  openWithEditAppointment: (appointment: AppointmentType, viewOnly?: boolean) => void;
 }
 
 export const useWizardDrawer = create<Type>((set) => ({
   isWizardOpen: false,
   initialData: null,
   pendingRequestData: null,
+  editingAppointment: null,
+  viewOnlyMode: false,
+  
   onClose: () =>
-    set({ isWizardOpen: false, initialData: null, pendingRequestData: null }),
+    set({ 
+      isWizardOpen: false, 
+      initialData: null, 
+      pendingRequestData: null, 
+      editingAppointment: null,
+      viewOnlyMode: false 
+    }),
+    
   onOpenNewAppointment: (initData) =>
     set({
       isWizardOpen: true,
       initialData: initData || null,
       pendingRequestData: null,
+      editingAppointment: null,
+      viewOnlyMode: false,
     }),
+    
   openWithPendingRequest: (request) =>
-    set({ isWizardOpen: true, pendingRequestData: request, initialData: null }),
+    set({ 
+      isWizardOpen: true, 
+      pendingRequestData: request, 
+      initialData: null, 
+      editingAppointment: null,
+      viewOnlyMode: false 
+    }),
+
+  openWithEditAppointment: (appointment, viewOnly = false) =>
+    set({
+      isWizardOpen: true,
+      editingAppointment: appointment,
+      viewOnlyMode: viewOnly,
+      initialData: null,
+      pendingRequestData: null,
+    }),
 }));

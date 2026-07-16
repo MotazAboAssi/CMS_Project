@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import type { DoctorType } from "@/features/dashboardAssitant/types";
 import { useWizardDrawer } from "../hooks/useWizardDrawer";
 import { START_TIME_MINUTES } from "../data/scheduleGrid";
@@ -124,15 +124,45 @@ export function useAppointmentWizard(
   // بوابة المزامنة عند فتح الـ Wizard
   // ابحث عن الـ useEffect الخاص بالمزامنة واستبدله بهذا التعديل:
   const initialData = useWizardDrawer((state) => state.initialData);
+  const editingAppointment = useWizardDrawer(
+    (state) => state.editingAppointment,
+  );
+  const viewOnlyMode = useWizardDrawer((state) => state.viewOnlyMode);
+  const originalDataRef = useRef<string>("");
 
   useEffect(() => {
     if (isWizardOpen) {
-      if (initialData) {
+      if (editingAppointment) {
+        const treatmentDuration =
+          editingAppointment.end - editingAppointment.start;
+        const formattedData: WizardFormData = {
+          treatmentId: editingAppointment.treatmentId || "",
+          complexity:
+            (editingAppointment.complexity as ComplexityType) || "standard",
+          date: editingAppointment.date
+            ? new Date(editingAppointment.date)
+            : new Date(),
+          timeSlot: editingAppointment.start + START_TIME_MINUTES,
+          doctorId: editingAppointment.docId,
+          isLockedToDoctor: editingAppointment.refuseTransfer || false,
+          notes: editingAppointment.notes || "",
+          patientName: editingAppointment.patient?.name || "",
+          patientPhone: editingAppointment.patient?.phone || "",
+          patientAge: String(editingAppointment.patient?.age || ""),
+          patientGender:
+            (editingAppointment.patient?.gender as "Male" | "Female") || null,
+          patientAddress: editingAppointment.patient?.adddress || "",
+          isExistingPatient: true,
+          duration: treatmentDuration,
+        };
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setFormData(formattedData);
+        originalDataRef.current = JSON.stringify(formattedData);
+      } else if (initialData) {
         console.log(
           `new Date(initialData.date).toDateString():${new Date(initialData.date).toDateString()}`,
         );
         // 🟢 التعبئة التلقائية الفورية وحل مشكلة عدم تحديد الطبيب والوقت
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormData((prev) => ({
           ...prev,
           treatmentId: "t1", // علاج افتراضي أولي لتجنب الفراغ
@@ -174,8 +204,20 @@ export function useAppointmentWizard(
           notes: `Created via Pending Request assigned on ${pendingRequestData.date} ${formatMinutesToAMPM(pendingRequestData.start)}`,
         }));
       }
+      setCurrentStep(1);
     }
-  }, [isWizardOpen, pendingRequestData, initialData, doctors]);
+  }, [
+    isWizardOpen,
+    pendingRequestData,
+    initialData,
+    doctors,
+    editingAppointment,
+  ]);
+
+  const isDirty = useMemo(() => {
+    // eslint-disable-next-line react-hooks/refs
+    return JSON.stringify(formData) !== originalDataRef.current;
+  }, [formData]);
 
   const selectedTreatment = useMemo(() => {
     return TREATMENT_OPTIONS.find((t) => t.id === formData.treatmentId) || null;
@@ -201,6 +243,7 @@ export function useAppointmentWizard(
     field: K,
     value: WizardFormData[K],
   ) => {
+    if (viewOnlyMode) return;
     setFormData((prev) => {
       const next = { ...prev, [field]: value };
 
@@ -231,6 +274,7 @@ export function useAppointmentWizard(
   };
 
   const selectPatientFromSearch = (patient: PatientProfile) => {
+  if (viewOnlyMode) return;
     setFormData((prev) => ({
       ...prev,
       patientName: patient.name,
@@ -397,8 +441,12 @@ export function useAppointmentWizard(
   // 🔥 تعديل جوهري: تصفية وحذف الطبيب المتعارض فوراً، وعرض الطبيب المتاح فقط!
 
   const handleNext = () => {
-    if (currentStep === 1 && isStep1Valid) setCurrentStep(2);
-    else if (currentStep === 2 && isStep2Valid) setCurrentStep(3);
+
+    if (currentStep === 1 && isStep1Valid || viewOnlyMode) setCurrentStep(2);
+    else if (currentStep === 2 && isStep2Valid || !viewOnlyMode ) {
+      // if (viewOnlyMode) return;
+      setCurrentStep(3);
+    }
   };
 
   const handleBack = () => {
@@ -407,9 +455,10 @@ export function useAppointmentWizard(
   };
 
   const handleFinalSubmit = () => {
+    if (viewOnlyMode) return;
     if (isStep1Valid && isStep2Valid) {
       const relativeTimeSlot =
-        formData.timeSlot !== null ? formData.timeSlot - START_TIME_MINUTES : 0;
+        formData.timeSlot !== null ? formData.timeSlot  : 0;
 
       onSave({
         ...formData,
@@ -425,6 +474,7 @@ export function useAppointmentWizard(
   };
 
   const handleDurationChange = (newDuration: number) => {
+    if (viewOnlyMode) return;
     setFormData((prev) => ({ ...prev, duration: Math.max(15, newDuration) }));
   };
 
@@ -454,5 +504,8 @@ export function useAppointmentWizard(
     handleBack,
     handleFinalSubmit,
     handleDurationChange,
+    isDirty,
+    viewOnlyMode,
+
   };
 }

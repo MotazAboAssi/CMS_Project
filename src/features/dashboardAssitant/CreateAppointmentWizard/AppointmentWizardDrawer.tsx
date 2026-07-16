@@ -1,5 +1,5 @@
-import { useCallback, useEffect } from "react";
-import { X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertTriangle, HelpCircle, X } from "lucide-react";
 import {
   TREATMENT_OPTIONS,
   useAppointmentWizard,
@@ -7,7 +7,6 @@ import {
 } from "./useAppointmentWizard";
 import {
   Step1TreatmentInfo,
-  type availableDoctorsFilteredType,
 } from "./Step1TreatmentInfo";
 import { Step2PatientInfo } from "./Step2PatientInfo";
 import { Step3ReviewSummary } from "./Step3ReviewSummary";
@@ -16,66 +15,136 @@ import { useWizardDrawer } from "../hooks/useWizardDrawer";
 import StepperCustome from "./StepperCustome";
 import type { AppointmentType, DoctorType } from "../types";
 import { usePendingRequest } from "../hooks/usePendingRequest";
+import { START_TIME_MINUTES } from "../data/scheduleGrid";
 
+// استيراد المكونات السلسة والآمنة من shadcn/ui
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogPortal,
+  DialogOverlay,
+} from "@/components/ui/dialog";
 interface AppointmentWizardDrawerProps {
-  doctors: DoctorType[]; //[cite: 16]
-  onExecuteCreation: (newApt: AppointmentType) => void; //[cite: 16]
+  doctors: DoctorType[];
+  onExecuteCreation: (newApt: AppointmentType) => void;
+  onExecuteUpdate?: (updatedApt: AppointmentType) => void; // إضافة دالة اختيارية للتعديل الفعلي
 }
 
 export function AppointmentWizardDrawer({
   doctors,
   onExecuteCreation,
+  onExecuteUpdate,
 }: AppointmentWizardDrawerProps) {
+  const viewOnlyMode = useWizardDrawer((state) => state.viewOnlyMode);
   const isWizardOpen = useWizardDrawer((state) => state.isWizardOpen);
   const onClose = useWizardDrawer((state) => state.onClose);
   const pendingRequestData = useWizardDrawer(
     (state) => state.pendingRequestData,
   ); // جلب بيانات الطلب النشط حالياً إن وجدت
+  const editingAppointment = useWizardDrawer(
+    (state) => state.editingAppointment,
+  );
+  const openWithEditAppointment = useWizardDrawer(
+    (state) => state.openWithEditAppointment,
+  );
+
+  // بوب آب تحذير الخروج وتأكيد الموعد المستعجل
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [urgentAptToConfirm, setUrgentAptToConfirm] =
+    useState<AppointmentType | null>(null);
+  const [countdown, setCountdown] = useState(5);
 
   const onRemovePendingRequest = usePendingRequest(
     (state) => state.onRemovePendingRequest,
   );
 
-  // بناء دالة وسيطة تقوم بصياغة كائن الموعد وحفظه مباشرة في الـ Grid State
+  // الاستماع للتحذير المستعجل مع تأخير بسيط لمنع تداخل شجرة الـ DOM والـ Focus
+  useEffect(() => {
+    const handleUrgentWarning = (e: unknown) => {
+      const apt = (e as { detail: { appointment: AppointmentType } }).detail
+        .appointment;
+      setTimeout(() => {
+        setUrgentAptToConfirm(apt);
+        setCountdown(5);
+      }, 50);
+    };
+
+    window.addEventListener("trigger-urgent-warning", handleUrgentWarning);
+    return () => {
+      window.removeEventListener("trigger-urgent-warning", handleUrgentWarning);
+    };
+  }, []);
+
+  // إدارة عداد الـ 5 ثوانٍ
+  useEffect(() => {
+    if (urgentAptToConfirm && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [urgentAptToConfirm, countdown]);
+
   const handleSaveAppointment = useCallback(
     (wizardData?: WizardFormData) => {
-      if (!wizardData) return null; //[cite: 16]
+      if (!wizardData) return null;
       const treatmentName =
-        TREATMENT_OPTIONS.find((t) => t.id === wizardData.treatmentId)?.name || //[cite: 16]
-        ""; //[cite: 16]
-      console.log(wizardData.date);
-      const newApt: AppointmentType = {
-        id: `apt-${Date.now()}`, //[cite: 16]
-        docId: wizardData.doctorId, //[cite: 16]
-        title: `${wizardData.patientName} - ${treatmentName}`, //[cite: 16]
-        start: wizardData.timeSlot || 0, //[cite: 16]
-        end: (wizardData.timeSlot || 0) + wizardData.duration, //[cite: 16]
-        status: wizardData.complexity === "urgent" ? "urgent" : "confirmed",
+        TREATMENT_OPTIONS.find((t) => t.id === wizardData.treatmentId)?.name ||
+        "";
+
+      const updatedApt: AppointmentType = {
+        id: editingAppointment ? editingAppointment.id : `apt-${Date.now()}`,
+        docId: wizardData.doctorId,
+        title: `${wizardData.patientName} - ${treatmentName}`,
+        start:
+          wizardData.timeSlot !== null
+            ? wizardData.timeSlot - START_TIME_MINUTES
+            : 0,
+        end:
+          (wizardData.timeSlot !== null
+            ? wizardData.timeSlot - START_TIME_MINUTES
+            : 0) + wizardData.duration,
+        status:
+          wizardData.complexity === "urgent"
+            ? "urgent"
+            : editingAppointment?.status || "confirmed",
         treatmentId: wizardData.treatmentId,
         complexity: wizardData.complexity,
         duration: wizardData.duration,
-        price: 0,
+        price: wizardData.duration * 5, // حساب السعر التقريبي
         patient: {
           name: wizardData.patientName,
           age: Number.parseInt(wizardData.patientAge),
           phone: wizardData.patientPhone,
-          gender: wizardData.patientGender,
+          gender: wizardData.patientGender || "Male",
           adddress: wizardData.patientAddress,
         },
-        refuseTransfer: false,
+        refuseTransfer: wizardData.isLockedToDoctor,
         date: wizardData.date,
+        notes: wizardData.notes,
       };
 
-      onExecuteCreation(newApt); // تحديث شبكة المواعيد فوراً[cite: 16]
+      if (editingAppointment && onExecuteUpdate) {
+        onExecuteUpdate(updatedApt); // تحديث الموعد القائم فعلياً لمنع الأخطاء والازدواجية
+      } else {
+        onExecuteCreation(updatedApt); // إنشاء موعد جديد
+      }
 
-      // 🔥 إذا كان هذا الموعد قادماً من مراجعة طلب معلق، قم بحذفه فوراً من القائمة الجانبية
       if (pendingRequestData) {
         onRemovePendingRequest(pendingRequestData.id);
       }
 
-      onClose(); // إغلاق الـ Drawer[cite: 16]
+      onClose();
     },
-    [onExecuteCreation, onClose, pendingRequestData, onRemovePendingRequest],
+    [
+      onExecuteCreation,
+      onExecuteUpdate,
+      onClose,
+      pendingRequestData,
+      onRemovePendingRequest,
+      editingAppointment,
+    ],
   );
 
   // نمرر الدالة الوسيطة handleSaveAppointment هنا بدلاً من onExecuteCreation المباشرة
@@ -93,94 +162,194 @@ export function AppointmentWizardDrawer({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleSaveAppointment, isWizardOpen, onClose, wizard, wizard.currentStep, wizard.formData]);
-
+  }, [handleSaveAppointment, isWizardOpen, onClose, wizard]);
+  const handleAttemptClose = () => {
+    if (wizard.isDirty && !viewOnlyMode) {
+      setShowExitConfirm(true);
+    } else {
+      onClose();
+    }
+  };
   if (!isWizardOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex justify-end">
-      {/* Semi-transparent Backdrop Mask Layer */}
-      <div
-        onClick={() => handleSaveAppointment()}
-        className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-all duration-1000 ease-in-out"
-      />
-
-      {/* Primary Control Base Plate Container */}
-      <div className="relative w-[28.5%] h-[95.5%] bg-white border-l border-neutral-200/80 shadow-[0_0_50px_rgba(0,0,0,0.15)] flex flex-col justify-between z-10 transition-all duration-1000 ease-in-out m-[24px] rounded-2xl">
-        {/* Header Block Section */}
-        <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between shrink-0">
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg text-neutral-400 hover:bg-neutral-50 transition-colors cursor-pointer"
+    <>
+      {/* 🔴 1. بوب آب الـ 5 ثوانٍ للموعد المستعجل عبر shadcn Portal لمنع تداخل الـ Blur والتركيز */}
+      <Dialog
+        open={!!urgentAptToConfirm}
+        onOpenChange={() => setUrgentAptToConfirm(null)}
+      >
+        <DialogPortal>
+          <DialogOverlay className="z-[9999] bg-black/60 backdrop-blur-sm" />
+          <DialogContent
+            className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] z-[10000] max-w-md w-full rounded-2xl p-6 text-right border border-neutral-100 shadow-2xl bg-white"
+            dir="rtl"
           >
-            <X className="w-4 h-4" />
-          </button>
-          <h3 className="text-sm font-bold text-neutral-800">
-            Create New Appointment
-          </h3>
-        </div>
-        {/* Unified 3-Step Stepper Display Track from image_319dc7.png */}
-        {/* Dynamic State-Driven Stepper Track (Green = Completed, Blue = Active, Gray = Pending) */}
-        <StepperCustome wizard={wizard} />
+            <DialogHeader className="space-y-3">
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                <AlertTriangle className="w-6 h-6 animate-bounce" />
+              </div>
+              <DialogTitle className="text-sm font-black text-neutral-900">
+                تنبيه: محاولة تعديل موعد حرج/مستعجل!
+              </DialogTitle>
+              <DialogDescription className="text-xs text-neutral-500 leading-relaxed">
+                هذا الموعد ذو أولوية عالية جداً ومستعجل. يرجى المراجعة والتدقيق
+                بعناية قبل إجراء أي تعديلات لتجنب الأخطاء الطبية وتضارب
+                المواعيد.
+              </DialogDescription>
+            </DialogHeader>
 
-        {/* Middle Scrollable Layout Body Panel */}
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-neutral-200">
-          {wizard.currentStep === 1 && (
-            <Step1TreatmentInfo
-              formData={wizard.formData}
-              availableTimeSlots={wizard.availableTimeSlots}
-              // عمل cast هنا لحل مشكلة عدم تطابق الـ Types بشكل مؤقت وآمن
-              availableDoctorsFiltered={
-                wizard.availableDoctorsFiltered as availableDoctorsFilteredType[]
-              }
-              searchTreatment={wizard.searchTreatment}
-              setSearchTreatment={wizard.setSearchTreatment}
-              handleFieldChange={wizard.handleFieldChange}
-            />
-          )}
-          {wizard.currentStep === 2 && <Step2PatientInfo {...wizard} />}
-          {wizard.currentStep === 3 && <Step3ReviewSummary {...wizard} />}
-        </div>
-        {/* Footer Trailing Step Controllers Tray */}
-        <div className="px-6 py-4 border-t border-neutral-100 flex items-center justify-between shrink-0">
-          {wizard.currentStep === 1 ? (
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 rounded-xl transition-all cursor-pointer"
-            >
-              Cancel
-            </button>
-          ) : (
-            <button
-              onClick={wizard.handleBack}
-              className="px-4 py-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-100 rounded-xl transition-all cursor-pointer"
-            >
-              Back
-            </button>
-          )}
+            <div className="flex gap-2 mt-6">
+              <button
+                disabled={countdown > 0}
+                onClick={() => {
+                  if (urgentAptToConfirm) {
+                    openWithEditAppointment(urgentAptToConfirm, false);
+                  }
+                  setUrgentAptToConfirm(null);
+                }}
+                className="flex-1 h-10 text-xs font-bold bg-red-600 hover:bg-red-700 text-white rounded-xl active:scale-[0.98] transition-all disabled:bg-neutral-200 disabled:text-neutral-400 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                {countdown > 0
+                  ? `يرجى الانتظار (${countdown}ث)`
+                  : "متابعة وتعديل"}
+              </button>
+              <button
+                onClick={() => setUrgentAptToConfirm(null)}
+                className="flex-1 h-10 text-xs font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl transition-all cursor-pointer"
+              >
+                إلغاء
+              </button>
+            </div>
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
 
-          {wizard.currentStep < 3 ? (
+      {/* ⚠️ 2. بوب آب تأكيد إلغاء التغييرات لحماية البيانات */}
+      <Dialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+        <DialogPortal>
+          <DialogOverlay className="z-[9999] bg-black/60 backdrop-blur-xs" />
+          <DialogContent
+            className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] z-[10000] max-w-sm w-full rounded-2xl p-5 text-right border border-neutral-100 shadow-2xl bg-white"
+            dir="rtl"
+          >
+            <DialogHeader className="space-y-3">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+                <HelpCircle className="w-6 h-6" />
+              </div>
+              <DialogTitle className="text-sm font-black text-neutral-900">
+                تأكيد إلغاء التغييرات؟
+              </DialogTitle>
+              <DialogDescription className="text-xs text-neutral-500 leading-relaxed">
+                لقد أجريت تعديلات على بيانات هذا الموعد. عند الخروج الآن ستفقد
+                كافة التغييرات غير المحفوظة. هل أنت متأكد؟
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex gap-2 mt-5">
+              <button
+                onClick={() => {
+                  setShowExitConfirm(false);
+                  onClose();
+                }}
+                className="flex-1 h-10 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all cursor-pointer"
+              >
+                تأكيد الخروج
+              </button>
+              <button
+                onClick={() => setShowExitConfirm(false)}
+                className="flex-1 h-10 text-xs font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl transition-all cursor-pointer"
+              >
+                متابعة التعديل
+              </button>
+            </div>
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
+
+      <div className="fixed inset-0 z-[70] flex justify-end">
+        <div
+          onClick={handleAttemptClose}
+          className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-all"
+        />
+
+        {/* Primary Control Base Plate Container */}
+        <div className="relative w-[28.5%] h-[95.5%] bg-white border-l border-neutral-200/80 shadow-[0_0_50px_rgba(0,0,0,0.15)] flex flex-col justify-between z-10 transition-all duration-1000 ease-in-out m-[24px] rounded-2xl">
+          {/* Header Block Section */}
+          <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between shrink-0">
             <button
-              onClick={wizard.handleNext}
-              disabled={
-                wizard.currentStep === 1
-                  ? !wizard.isStep1Valid
-                  : !wizard.isStep2Valid
-              }
-              className="px-5 py-2 text-xs font-bold bg-[#0066ff] hover:bg-blue-600 text-white shadow-sm disabled:opacity-40 disabled:pointer-events-none rounded-xl transition-all active:scale-[0.99] cursor-pointer"
+              onClick={handleAttemptClose}
+              className="p-1 rounded-lg text-neutral-400 hover:bg-neutral-50 transition-colors cursor-pointer"
             >
-              Next
+              <X className="w-4 h-4" />
             </button>
-          ) : (
-            <button
-              onClick={wizard.handleFinalSubmit}
-              className="px-5 py-2 text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm rounded-xl transition-all active:scale-[0.99] cursor-pointer"
-            >
-              Create Appointment
-            </button>
-          )}
+            <h3 className="text-sm font-bold text-neutral-800">
+              {viewOnlyMode
+                ? "Info Appointment"
+                : editingAppointment
+                  ? "Update Appointment"
+                  : "Create Appointment"}
+            </h3>
+            {/* {viewOnlyMode ? "وضع القراءة فقط" : "استمارة الجدولة التفاعلية"} */}
+          </div>
+          {/* Unified 3-Step Stepper Display Track from image_319dc7.png */}
+          {/* Dynamic State-Driven Stepper Track (Green = Completed, Blue = Active, Gray = Pending) */}
+          <StepperCustome wizard={wizard} />
+
+          {/* Middle Scrollable Layout Body Panel */}
+          <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-neutral-200">
+            {wizard.currentStep === 1 && <Step1TreatmentInfo {...wizard} />}
+            {wizard.currentStep === 2 && <Step2PatientInfo {...wizard} />}
+            {wizard.currentStep === 3 && <Step3ReviewSummary {...wizard} />}
+          </div>
+          {/* Footer Trailing Step Controllers Tray */}
+          <div className="px-6 py-4 border-t border-neutral-100 flex items-center justify-between shrink-0">
+            {wizard.currentStep === 1 ? (
+              <button
+                onClick={handleAttemptClose}
+                className="px-4 py-2 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 rounded-xl transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            ) : (
+              <button
+                onClick={wizard.handleBack}
+                className="px-4 py-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-100 rounded-xl transition-all cursor-pointer"
+              >
+                Back
+              </button>
+            )}
+
+            {wizard.currentStep == 1 ||
+            (wizard.currentStep == 2 && !viewOnlyMode) ? (
+              <button
+                onClick={wizard.handleNext}
+                disabled={
+                  viewOnlyMode
+                    ? false
+                    : wizard.currentStep === 1
+                      ? !wizard.isStep1Valid
+                      : !wizard.isStep2Valid
+                }
+                className="px-5 py-2 text-xs font-bold bg-[#0066ff] hover:bg-blue-600 text-white shadow-sm disabled:opacity-40 disabled:pointer-events-none rounded-xl transition-all active:scale-[0.99] cursor-pointer"
+              >
+                Next
+              </button>
+            ) : (
+              !viewOnlyMode && (
+                <button
+                  onClick={wizard.handleFinalSubmit}
+                  className="px-5 py-2 text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm rounded-xl transition-all active:scale-[0.99] cursor-pointer"
+                >
+                  {editingAppointment
+                    ? "Update Appointment"
+                    : "Create Appointment"}
+                </button>
+              )
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

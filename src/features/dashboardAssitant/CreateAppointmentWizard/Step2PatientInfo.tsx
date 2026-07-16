@@ -18,6 +18,7 @@ interface Step2PatientInfoProps {
     phoneEmpty: boolean;
   };
   isDuplicatePhone: boolean;
+  viewOnlyMode?: boolean;
 }
 
 export function Step2PatientInfo({
@@ -28,6 +29,7 @@ export function Step2PatientInfo({
   selectPatientFromSearch,
   step2Errors,
   isDuplicatePhone,
+  viewOnlyMode = false,
 }: Step2PatientInfoProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -82,6 +84,7 @@ export function Step2PatientInfo({
         <div className="relative flex items-center">
           <input
             type="text"
+            disabled={viewOnlyMode}
             value={formData.patientName}
             onChange={(e) => {
               handleFieldChange("patientName", e.target.value);
@@ -104,7 +107,7 @@ export function Step2PatientInfo({
         </div>
 
         {/* Floating Suggestion Panel */}
-        {showDropdown && filteredPatients.length > 0 && (
+        {showDropdown && filteredPatients.length > 0 && !viewOnlyMode && (
           <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-neutral-200 shadow-xl rounded-xl p-1 z-50 max-h-48 overflow-y-auto">
             {filteredPatients.map((patient, idx) => (
               <button
@@ -139,7 +142,6 @@ export function Step2PatientInfo({
       {/* 2. Age & Gender Layout Row split wrapper */}
       <div className="grid grid-cols-2 gap-3">
         {/* Gender Selection Grid */}
-        
 
         {/* Numerical Age Field */}
         <div>
@@ -148,8 +150,9 @@ export function Step2PatientInfo({
           </label>
           <input
             type="number"
+            disabled={viewOnlyMode}
             min="0"
-            max="120"
+            max="99"
             value={formData.patientAge}
             onChange={(e) => handleFieldChange("patientAge", e.target.value)}
             placeholder="Enter patient age"
@@ -167,6 +170,7 @@ export function Step2PatientInfo({
           <div className="grid grid-cols-2 gap-2">
             {["Male", "Female"].map((g) => (
               <button
+                disabled={viewOnlyMode}
                 key={g}
                 type="button"
                 onClick={() =>
@@ -202,6 +206,7 @@ export function Step2PatientInfo({
         </label>
         <div className="relative flex items-center">
           <input
+            disabled={viewOnlyMode}
             type="text"
             value={formData.patientPhone}
             onChange={(e) => handleFieldChange("patientPhone", e.target.value)}
@@ -235,6 +240,7 @@ export function Step2PatientInfo({
         <div className="relative flex items-start">
           <textarea
             maxLength={200}
+            disabled={viewOnlyMode}
             value={formData.patientAddress}
             onChange={(e) =>
               handleFieldChange("patientAddress", e.target.value)

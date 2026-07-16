@@ -2,12 +2,15 @@ import { useMemo, useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import {
   TREATMENT_OPTIONS,
+  // useAppointmentWizard,
   type ComplexityType,
   type WizardFormData,
 } from "./useAppointmentWizard";
 import { formatMinutesToAMPM } from "../components/SchedualeGrid/DNDGrid/utils/timeFormatters";
 import type { AppointmentType } from "../types";
 import { Calendar } from "@/components/ui/calendar";
+import { INITIAL_DOCTORS } from "../data/scheduleGrid";
+import { useWizardDrawer } from "../hooks/useWizardDrawer";
 
 export interface availableDoctorsFilteredType {
   appointmentsTodayCount: number;
@@ -31,6 +34,7 @@ interface Step1TreatmentInfoType {
     field: K,
     value: WizardFormData[K],
   ) => void;
+  viewOnlyMode?: boolean;
 }
 
 export function Step1TreatmentInfo({
@@ -40,17 +44,28 @@ export function Step1TreatmentInfo({
   searchTreatment,
   setSearchTreatment,
   handleFieldChange,
+  viewOnlyMode = false,
 }: Step1TreatmentInfoType) {
+  const editingAppointment = useWizardDrawer(
+    (state) => state.editingAppointment,
+  );
   // eslint-disable-next-line react-hooks/purity
   const now: number = useMemo(() => Date.now(), []);
 
   const [showTreatDropdown, setShowTreatDropdown] = useState(false);
   const [showDocDropdown, setShowDocDropdown] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
-  const handleDateSelect = (day: number) => {
-    const date = new Date(day);
-    handleFieldChange("date", date);
-  };
+  // const handleDateSelect = (day: number) => {
+  //   const date = new Date(day);
+  //   handleFieldChange("date", date);
+  // };
+
+  const filteredTreatments = useMemo(() => {
+    return TREATMENT_OPTIONS.filter((t) =>
+      t.name.toLowerCase().includes(searchTreatment.toLowerCase()),
+    );
+  }, [searchTreatment]);
 
   const nowDate = new Date();
 
@@ -59,6 +74,14 @@ export function Step1TreatmentInfo({
     formData.timeSlot <= nowDate.getHours() * 60 + nowDate.getMinutes()
   )
     handleFieldChange("timeSlot", null);
+  const selectedTreatment = useMemo(
+    () =>
+      TREATMENT_OPTIONS.find((t) => {
+        // console.log(formData.treatmentId);
+        return t.id === formData.treatmentId;
+      }),
+    [formData.treatmentId],
+  );
   return (
     <div className="space-y-5  select-none animate-in fade-in duration-200">
       {/* 1. Treatment Dropdown Slot */}
@@ -68,17 +91,28 @@ export function Step1TreatmentInfo({
         </label>
         <button
           type="button"
-          onClick={() => setShowTreatDropdown(!showTreatDropdown)}
+          disabled={viewOnlyMode}
+          onClick={() => {
+            console.log(selectedTreatment?.name);
+            return (
+              !viewOnlyMode &&
+              setShowTreatDropdown((prev) => {
+                if (!prev) {
+                  setShowCalendar(false);
+                  setShowDocDropdown(false);
+                }
+                return !prev;
+              })
+            );
+          }}
           className="w-full bg-white border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-neutral-800 flex items-center justify-between shadow-xs hover:border-neutral-300 transition-colors"
         >
-          <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
+          {!viewOnlyMode && (
+            <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
+          )}
           <span>
-            {TREATMENT_OPTIONS.find((t) => {
-              // console.log(formData.treatmentId);
-              return t.id === formData.treatmentId;
-            })
-              ? TREATMENT_OPTIONS.find((t) => t.id === formData.treatmentId)
-                  ?.name
+            {selectedTreatment
+              ? selectedTreatment?.name
               : "Choose treatment option..."}
           </span>
         </button>
@@ -96,14 +130,13 @@ export function Step1TreatmentInfo({
               />
             </div>
             <div className="max-h-40 overflow-y-auto scrollbar-thin space-y-0.5">
-              {TREATMENT_OPTIONS.filter((t) =>
-                t.name.toLowerCase().includes(searchTreatment.toLowerCase()),
-              ).map((t) => (
+              {filteredTreatments.map((t) => (
                 <button
                   key={t.id}
                   type="button"
                   onClick={() => {
                     handleFieldChange("treatmentId", t.id);
+                    // handleDurationChange(t.baseDuration);
                     setShowTreatDropdown(false);
                   }}
                   className="w-full text-right px-3 py-2 text-xs font-medium rounded-lg text-neutral-700 hover:bg-neutral-50 flex items-center justify-between"
@@ -136,6 +169,7 @@ export function Step1TreatmentInfo({
               }`}
             >
               <input
+                disabled={viewOnlyMode}
                 type="radio"
                 name="complexity"
                 value={tier}
@@ -149,23 +183,47 @@ export function Step1TreatmentInfo({
         </div>
       </div>
       {/* 3. High Precision Day-Count Validated Calendar Grid */}
-      <div>
-        <label className="block text-xs font-bold text-neutral-500 mb-1.5 uppercase tracking-wide">
-          Select Date *
+      <div className="relative">
+        <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wide mb-1.5">
+          Appointment Date
         </label>
-        <Calendar
-          mode="single"
-          disabled={{
-            before: new Date(), // Disables all past dates
-          }}
-          selected={new Date(formData.date ?? now)}
-          defaultMonth={new Date(formData.date ?? now)}
-          captionLayout="label"
-          onSelect={(date) =>
-            date && handleDateSelect(Date.parse(date.toString()))
-          }
-          className="border-none shadow-none w-full"
-        />
+        <button
+          disabled={viewOnlyMode}
+          onClick={() => !viewOnlyMode && setShowCalendar((prev) => {
+                if (!prev) {
+                  setShowTreatDropdown(false);
+                  setShowDocDropdown(false);
+                }
+                return !prev;
+              })}
+          className="w-full h-11 bg-white border border-neutral-200 rounded-xl px-4 flex items-center justify-between text-xs font-semibold text-neutral-700 disabled:bg-neutral-50 disabled:text-neutral-400 cursor-pointer"
+        >
+          {!viewOnlyMode && (
+            <ChevronDown className="w-4 h-4 text-neutral-400" />
+          )}
+          <span>
+            {formData.date ? formData.date.toDateString() : "Select date..."}
+          </span>
+        </button>
+
+        {showCalendar && (
+          <div className="absolute top-[102%] right-0 left-0 z-[100] bg-white border border-neutral-100 rounded-2xl shadow-xl p-3 flex justify-center">
+            <Calendar
+              mode="single"
+              disabled={{ before: new Date() }}
+              selected={formData.date}
+              onSelect={(day) => {
+                if (day) {
+                  handleFieldChange("date", day);
+                  setShowCalendar(false);
+                }
+              }}
+              defaultMonth={new Date(formData.date ?? now)}
+              captionLayout="label"
+              className="border-none shadow-none w-full"
+            />
+          </div>
+        )}
       </div>
       {/* 4. Filtered Time Selector Node */}
       <div>
@@ -183,23 +241,32 @@ export function Step1TreatmentInfo({
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-1.5 max-h-28 overflow-y-auto pr-1 scrollbar-thin">
-            {availableTimeSlots.map((minutesSlot: number) => {
-              const isSelected = formData.timeSlot === minutesSlot;
-              return (
-                <button
-                  key={minutesSlot}
-                  type="button"
-                  onClick={() => handleFieldChange("timeSlot", minutesSlot)}
-                  className={`py-1.5 rounded-lg border text-xs font-bold transition-all ${
-                    isSelected
-                      ? "border-blue-500 bg-blue-50/50 text-blue-600"
-                      : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
-                  }`}
-                >
-                  {formatMinutesToAMPM(minutesSlot)}
-                </button>
-              );
-            })}
+            {!viewOnlyMode ? (
+              availableTimeSlots.map((minutesSlot: number) => {
+                const isSelected = formData.timeSlot === minutesSlot;
+                return (
+                  <button
+                    key={minutesSlot}
+                    type="button"
+                    onClick={() => handleFieldChange("timeSlot", minutesSlot)}
+                    className={`py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                      isSelected
+                        ? "border-blue-500 bg-blue-50/50 text-blue-600"
+                        : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
+                    }`}
+                  >
+                    {formatMinutesToAMPM(minutesSlot)}
+                  </button>
+                );
+              })
+            ) : (
+              <label
+                key={formData.timeSlot}
+                className={`py-1.5 rounded-lg border text-xs font-bold transition-all "border-blue-500 bg-blue-50/50 text-blue-600"`}
+              >
+                {formatMinutesToAMPM(formData.timeSlot!)}
+              </label>
+            )}
           </div>
         )}
       </div>
@@ -209,28 +276,32 @@ export function Step1TreatmentInfo({
           Appointment Duration (Minutes)
         </label>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() =>
-              handleFieldChange(
-                "duration",
-                Math.max(15, formData.duration - 15),
-              )
-            }
-            className="px-3 py-1 bg-neutral-100 rounded-lg"
-          >
-            -
-          </button>
+          {!viewOnlyMode && (
+            <button
+              onClick={() =>
+                handleFieldChange(
+                  "duration",
+                  Math.max(15, formData.duration - 15),
+                )
+              }
+              className="px-3 py-1 bg-neutral-100 rounded-lg"
+            >
+              -
+            </button>
+          )}
           <span className="font-mono text-sm font-bold">
             {formData.duration} min
           </span>
-          <button
-            onClick={() =>
-              handleFieldChange("duration", formData.duration + 15)
-            }
-            className="px-3 py-1 bg-neutral-100 rounded-lg"
-          >
-            +
-          </button>
+          {!viewOnlyMode && (
+            <button
+              onClick={() =>
+                handleFieldChange("duration", formData.duration + 15)
+              }
+              className="px-3 py-1 bg-neutral-100 rounded-lg"
+            >
+              +
+            </button>
+          )}
         </div>
       </div>
       {/* 5. Deduplicated Doctor Selection */}
@@ -241,16 +312,27 @@ export function Step1TreatmentInfo({
         <button
           type="button"
           disabled={formData.timeSlot === null}
-          onClick={() => setShowDocDropdown(!showDocDropdown)}
+          onClick={() => !viewOnlyMode && setShowDocDropdown((prev) => {
+                if (!prev) {
+                  setShowCalendar(false);
+                  setShowTreatDropdown(false);
+                }
+                return !prev;
+              })}
           className="w-full bg-white border border-neutral-200 disabled:bg-neutral-50/70 disabled:opacity-60 rounded-xl px-3.5 py-2.5 text-xs font-medium text-neutral-800 flex items-center justify-between shadow-xs"
         >
           <span>
-            {formData.doctorId
-              ? availableDoctorsFiltered.find((d) => d.id === formData.doctorId)
-                  ?.name
-              : "Choose dynamic provider..."}
+            {viewOnlyMode || editingAppointment
+              ? INITIAL_DOCTORS.find((d) => d.id === formData.doctorId)?.name
+              : formData.doctorId
+                ? availableDoctorsFiltered.find(
+                    (d) => d.id === formData.doctorId,
+                  )?.name
+                : "Choose dynamic provider..."}
           </span>
-          <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
+          {!viewOnlyMode && (
+            <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
+          )}
         </button>
 
         {showDocDropdown && (
@@ -271,6 +353,17 @@ export function Step1TreatmentInfo({
                     }}
                     className="w-full text-right px-3 py-2 text-xs font-medium rounded-lg text-neutral-700 hover:bg-neutral-50 flex items-center justify-between"
                   >
+                    <div className="w-7 h-7 rounded-full bg-neutral-100 overflow-hidden shrink-0">
+                      {doc.avatar ? (
+                        <img
+                          src={doc.avatar}
+                          alt={doc.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-neutral-200" />
+                      )}
+                    </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{doc.name}</span>
                       <div className="w-5 h-5 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-[10px] text-neutral-500 font-bold">
@@ -293,6 +386,7 @@ export function Step1TreatmentInfo({
           Restrict to this doctor only
         </span>
         <input
+          disabled={viewOnlyMode}
           type="checkbox"
           checked={formData.isLockedToDoctor}
           onChange={(e) =>
@@ -312,6 +406,7 @@ export function Step1TreatmentInfo({
           </span>
         </div>
         <textarea
+          disabled={viewOnlyMode}
           maxLength={200}
           value={formData.notes}
           onChange={(e) => handleFieldChange("notes", e.target.value)}
