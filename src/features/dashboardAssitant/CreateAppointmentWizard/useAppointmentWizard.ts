@@ -129,14 +129,14 @@ export function useAppointmentWizard(
   );
   const viewOnlyMode = useWizardDrawer((state) => state.viewOnlyMode);
   const originalDataRef = useRef<string>("");
+  const prevIsWizardOpen = useRef(false);
 
   useEffect(() => {
-    if (isWizardOpen) {
-      if (editingAppointment) {
+if (isWizardOpen && !prevIsWizardOpen.current) {      if (editingAppointment) {
         const treatmentDuration =
           editingAppointment.end - editingAppointment.start;
         const formattedData: WizardFormData = {
-          treatmentId: editingAppointment.treatmentId || "",
+          treatmentId: editingAppointment.treatmentId,
           complexity:
             (editingAppointment.complexity as ComplexityType) || "standard",
           date: editingAppointment.date
@@ -206,6 +206,7 @@ export function useAppointmentWizard(
       }
       setCurrentStep(1);
     }
+    prevIsWizardOpen.current = isWizardOpen;
   }, [
     isWizardOpen,
     pendingRequestData,
@@ -274,7 +275,7 @@ export function useAppointmentWizard(
   };
 
   const selectPatientFromSearch = (patient: PatientProfile) => {
-  if (viewOnlyMode) return;
+    if (viewOnlyMode) return;
     setFormData((prev) => ({
       ...prev,
       patientName: patient.name,
@@ -288,7 +289,6 @@ export function useAppointmentWizard(
     setIsDuplicatePhone(false);
   };
   const availableDoctorsFiltered = useMemo(() => {
-    // console.log(`formData.date : ${new Date(formData.date).toDateString()}`)
     const targetDateStr = formData.date
       ? new Date(formData.date).toDateString()
       : "";
@@ -310,10 +310,13 @@ export function useAppointmentWizard(
             const relativeStartTime = formData.timeSlot - START_TIME_MINUTES;
             const relativeEndTime = relativeStartTime + computedDuration;
 
-            const hasConflict = appointmentsToday.some(
-              (apt) =>
-                relativeStartTime < apt.end && relativeEndTime > apt.start,
-            );
+            const hasConflict = appointmentsToday.some((apt) => {
+              // 🔥 CRITICAL FIX: Ignore the appointment currently being updated to prevent self-validation conflict.
+              if (editingAppointment && apt.id === editingAppointment.id)
+                return false;
+              if (formData.timeSlot === null) return false;
+              return relativeStartTime < apt.end && relativeEndTime > apt.start;
+            });
             isAvailableAtSlot = !hasConflict;
           }
 
@@ -322,7 +325,7 @@ export function useAppointmentWizard(
             specialty: doc.specialty || "General Dentist",
             appointmentsTodayCount: dailyCount,
             isAvailableAtSlot: isAvailableAtSlot,
-            isAvailable: isAvailableAtSlot, // محاذاة الحالة لضمان التوافق البصري
+            isAvailable: true, // محاذاة الحالة لضمان التوافق البصري
             appointments: appointmentsToday,
           };
         })
@@ -337,13 +340,7 @@ export function useAppointmentWizard(
           return doc.name.toLowerCase().includes(searchDoctor.toLowerCase());
         })
     );
-  }, [
-    formData.date,
-    formData.timeSlot,
-    computedDuration,
-    doctors,
-    searchDoctor,
-  ]);
+  }, [formData.date, formData.timeSlot, doctors, computedDuration, editingAppointment, searchDoctor]);
   // فحص حارس الخطوة الأولى: نتحقق من أن الطبيب متاح وصالح لتفعيل زر الـ Next
   const isStep1Valid = useMemo(() => {
     if (
@@ -441,10 +438,8 @@ export function useAppointmentWizard(
   // 🔥 تعديل جوهري: تصفية وحذف الطبيب المتعارض فوراً، وعرض الطبيب المتاح فقط!
 
   const handleNext = () => {
-
-    if (currentStep === 1 && isStep1Valid || viewOnlyMode) setCurrentStep(2);
-    else if (currentStep === 2 && isStep2Valid || !viewOnlyMode ) {
-      // if (viewOnlyMode) return;
+    if (currentStep === 1 && (isStep1Valid || viewOnlyMode)) setCurrentStep(2);
+    else if (currentStep === 2 && (isStep2Valid || viewOnlyMode)) {
       setCurrentStep(3);
     }
   };
@@ -458,7 +453,7 @@ export function useAppointmentWizard(
     if (viewOnlyMode) return;
     if (isStep1Valid && isStep2Valid) {
       const relativeTimeSlot =
-        formData.timeSlot !== null ? formData.timeSlot  : 0;
+        formData.timeSlot !== null ? formData.timeSlot : 0;
 
       onSave({
         ...formData,
@@ -506,6 +501,5 @@ export function useAppointmentWizard(
     handleDurationChange,
     isDirty,
     viewOnlyMode,
-
   };
 }

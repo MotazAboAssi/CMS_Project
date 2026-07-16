@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, HelpCircle, X } from "lucide-react";
+import {  HelpCircle, X } from "lucide-react";
 import {
   TREATMENT_OPTIONS,
   useAppointmentWizard,
   type WizardFormData,
 } from "./useAppointmentWizard";
-import {
-  Step1TreatmentInfo,
-} from "./Step1TreatmentInfo";
+import { Step1TreatmentInfo } from "./Step1TreatmentInfo";
 import { Step2PatientInfo } from "./Step2PatientInfo";
 import { Step3ReviewSummary } from "./Step3ReviewSummary";
 
@@ -47,44 +45,12 @@ export function AppointmentWizardDrawer({
   const editingAppointment = useWizardDrawer(
     (state) => state.editingAppointment,
   );
-  const openWithEditAppointment = useWizardDrawer(
-    (state) => state.openWithEditAppointment,
-  );
-
+  
   // بوب آب تحذير الخروج وتأكيد الموعد المستعجل
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [urgentAptToConfirm, setUrgentAptToConfirm] =
-    useState<AppointmentType | null>(null);
-  const [countdown, setCountdown] = useState(5);
-
   const onRemovePendingRequest = usePendingRequest(
     (state) => state.onRemovePendingRequest,
   );
-
-  // الاستماع للتحذير المستعجل مع تأخير بسيط لمنع تداخل شجرة الـ DOM والـ Focus
-  useEffect(() => {
-    const handleUrgentWarning = (e: unknown) => {
-      const apt = (e as { detail: { appointment: AppointmentType } }).detail
-        .appointment;
-      setTimeout(() => {
-        setUrgentAptToConfirm(apt);
-        setCountdown(5);
-      }, 50);
-    };
-
-    window.addEventListener("trigger-urgent-warning", handleUrgentWarning);
-    return () => {
-      window.removeEventListener("trigger-urgent-warning", handleUrgentWarning);
-    };
-  }, []);
-
-  // إدارة عداد الـ 5 ثوانٍ
-  useEffect(() => {
-    if (urgentAptToConfirm && countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [urgentAptToConfirm, countdown]);
 
   const handleSaveAppointment = useCallback(
     (wizardData?: WizardFormData) => {
@@ -92,6 +58,31 @@ export function AppointmentWizardDrawer({
       const treatmentName =
         TREATMENT_OPTIONS.find((t) => t.id === wizardData.treatmentId)?.name ||
         "";
+
+      const targetStart =
+        wizardData.timeSlot !== null ? wizardData.timeSlot : 0;
+      const targetEnd = targetStart + wizardData.duration;
+
+      // Validate overlaps against existing doctors and their appointments
+      const assignedDoctor = doctors.find((d) => d.id === wizardData.doctorId);
+      if (assignedDoctor) {
+        const hasOverlapConflict = (
+          assignedDoctor.appointments || []
+        ).some((app) => {
+          // Ignore the appointment currently being modified during validation
+          if (editingAppointment && app.id === editingAppointment.id) {
+            return false;
+          }
+          return targetStart < app.end && targetEnd > app.start;
+        });
+
+        if (hasOverlapConflict) {
+          alert(
+            "This slot conflicts with an existing appointment for the selected doctor.",
+          );
+          return; // If validation fails, original appointment remains unchanged.
+        }
+      }
 
       const updatedApt: AppointmentType = {
         id: editingAppointment ? editingAppointment.id : `apt-${Date.now()}`,
@@ -137,14 +128,7 @@ export function AppointmentWizardDrawer({
 
       onClose();
     },
-    [
-      onExecuteCreation,
-      onExecuteUpdate,
-      onClose,
-      pendingRequestData,
-      onRemovePendingRequest,
-      editingAppointment,
-    ],
+    [doctors, editingAppointment, onExecuteUpdate, pendingRequestData, onClose, onExecuteCreation, onRemovePendingRequest],
   );
 
   // نمرر الدالة الوسيطة handleSaveAppointment هنا بدلاً من onExecuteCreation المباشرة
@@ -174,63 +158,12 @@ export function AppointmentWizardDrawer({
 
   return (
     <>
-      {/* 🔴 1. بوب آب الـ 5 ثوانٍ للموعد المستعجل عبر shadcn Portal لمنع تداخل الـ Blur والتركيز */}
-      <Dialog
-        open={!!urgentAptToConfirm}
-        onOpenChange={() => setUrgentAptToConfirm(null)}
-      >
-        <DialogPortal>
-          <DialogOverlay className="z-[9999] bg-black/60 backdrop-blur-sm" />
-          <DialogContent
-            className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] z-[10000] max-w-md w-full rounded-2xl p-6 text-right border border-neutral-100 shadow-2xl bg-white"
-            dir="rtl"
-          >
-            <DialogHeader className="space-y-3">
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500">
-                <AlertTriangle className="w-6 h-6 animate-bounce" />
-              </div>
-              <DialogTitle className="text-sm font-black text-neutral-900">
-                تنبيه: محاولة تعديل موعد حرج/مستعجل!
-              </DialogTitle>
-              <DialogDescription className="text-xs text-neutral-500 leading-relaxed">
-                هذا الموعد ذو أولوية عالية جداً ومستعجل. يرجى المراجعة والتدقيق
-                بعناية قبل إجراء أي تعديلات لتجنب الأخطاء الطبية وتضارب
-                المواعيد.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="flex gap-2 mt-6">
-              <button
-                disabled={countdown > 0}
-                onClick={() => {
-                  if (urgentAptToConfirm) {
-                    openWithEditAppointment(urgentAptToConfirm, false);
-                  }
-                  setUrgentAptToConfirm(null);
-                }}
-                className="flex-1 h-10 text-xs font-bold bg-red-600 hover:bg-red-700 text-white rounded-xl active:scale-[0.98] transition-all disabled:bg-neutral-200 disabled:text-neutral-400 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                {countdown > 0
-                  ? `يرجى الانتظار (${countdown}ث)`
-                  : "متابعة وتعديل"}
-              </button>
-              <button
-                onClick={() => setUrgentAptToConfirm(null)}
-                className="flex-1 h-10 text-xs font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl transition-all cursor-pointer"
-              >
-                إلغاء
-              </button>
-            </div>
-          </DialogContent>
-        </DialogPortal>
-      </Dialog>
-
       {/* ⚠️ 2. بوب آب تأكيد إلغاء التغييرات لحماية البيانات */}
       <Dialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
         <DialogPortal>
-          <DialogOverlay className="z-[9999] bg-black/60 backdrop-blur-xs" />
+          <DialogOverlay className=" bg-black/60 backdrop-blur-xs" />
           <DialogContent
-            className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] z-[10000] max-w-sm w-full rounded-2xl p-5 text-right border border-neutral-100 shadow-2xl bg-white"
+            className="fixed z-100 max-w-sm w-full rounded-2xl p-5 text-right border border-neutral-100 shadow-2xl bg-white"
             dir="rtl"
           >
             <DialogHeader className="space-y-3">
@@ -325,11 +258,13 @@ export function AppointmentWizardDrawer({
               <button
                 onClick={wizard.handleNext}
                 disabled={
-                  viewOnlyMode
+                  editingAppointment
                     ? false
-                    : wizard.currentStep === 1
-                      ? !wizard.isStep1Valid
-                      : !wizard.isStep2Valid
+                    : viewOnlyMode
+                      ? false
+                      : wizard.currentStep === 1
+                        ? !wizard.isStep1Valid
+                        : !wizard.isStep2Valid
                 }
                 className="px-5 py-2 text-xs font-bold bg-[#0066ff] hover:bg-blue-600 text-white shadow-sm disabled:opacity-40 disabled:pointer-events-none rounded-xl transition-all active:scale-[0.99] cursor-pointer"
               >

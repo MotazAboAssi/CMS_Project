@@ -229,6 +229,7 @@ export function Step1TreatmentInfo({
       <div>
         <label className="block text-xs font-bold text-neutral-500 mb-1.5 uppercase tracking-wide">
           Available Start Time *
+          <p className="text-blue-500 animate-pulse">Start Time : {formatMinutesToAMPM(formData.timeSlot!)}</p>
         </label>
         {availableTimeSlots.length === 0 ? (
           <div className="bg-amber-50/60 border border-amber-100 rounded-xl p-3 text-center">

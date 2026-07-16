@@ -59,6 +59,7 @@ export function DNDGrid() {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor),
   );
+  
 
   return (
     <DndContext
@@ -112,10 +113,11 @@ export function DNDGrid() {
         onClose={closeToast}
         onUndo={handleUndoAction}
       />
-      <AppointmentWizardDrawer
-        doctors={doctors}
-        onExecuteCreation={addAppointment}
-      />
+      <AppointmentWizardDrawer 
+  doctors={doctors} 
+  onExecuteCreation={addAppointment} 
+  onExecuteUpdate={updateAppointment} // Map this callback in your top-level scheduler state
+/>
 
       {/* 🚀 حقن درج النزاعات التفاعلي في قاع المكون المستقر */}
       <ConflictDrawer
