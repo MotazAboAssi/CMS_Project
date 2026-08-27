@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/ui/calendar.tsx
 import * as React from "react"
 import {
@@ -8,23 +9,25 @@ import {
 } from "react-day-picker"
 import { format, setMonth, setYear } from "date-fns"
 import { cn } from "@/lib/utils"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
+
+type CalendarProps = Omit<React.ComponentProps<typeof DayPicker>, "selected" | "onSelect"> & {
+  buttonVariant?: React.ComponentProps<typeof Button>["variant"]
+  selected?: Date
+  onSelect?: (date: Date | undefined) => void
+}
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
   locale,
-  formatters,
   components,
   selected,
   onSelect,
   ...props
-}: React.ComponentProps<typeof DayPicker> & {
-  buttonVariant?: React.ComponentProps<typeof Button>["variant"]
-}) {
-  const defaultClassNames = getDefaultClassNames()
+}: CalendarProps) {
 
   // حالات التحكم في واجهة العرض (الأيام مقابل الأشهر والسنوات)
   const [viewMode, setViewMode] = React.useState<"days" | "months">("days")
@@ -35,6 +38,7 @@ function Calendar({
   // التزامن عند تغيير التاريخ من الخارج
   React.useEffect(() => {
     if (selected instanceof Date) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentMonth(selected)
     }
   }, [selected])
@@ -122,11 +126,12 @@ function Calendar({
         {/* الوضع الأول: عرض شبكة الأيام الافتراضية */}
         {viewMode === "days" && (
           <DayPicker
+            mode="single"
             showOutsideDays={showOutsideDays}
             month={currentMonth}
             onMonthChange={setCurrentMonth}
-            selected={selected}
-            onSelect={onSelect}
+            selected={selected as any}
+            onSelect={onSelect as any}
             locale={locale}
             className="m-0 p-0"
             classNames={{
@@ -135,7 +140,7 @@ function Calendar({
               month: "flex w-full flex-col gap-2",
               month_caption: "hidden", // إخفاء الكابشن الافتراضي تماماً لتفادي المشكلة السابقة
               nav: "hidden", // إخفاء أزرار التنقل الافتراضية للـ DayPicker
-              table: "w-full border-collapse mt-1",
+              // table: "w-full border-collapse mt-1",
               weekdays: "flex justify-between mb-1",
               weekday: "w-9 text-[11px] font-bold uppercase tracking-widest text-neutral-400 text-center",
               week: "flex w-full justify-between mt-1",
@@ -218,9 +223,7 @@ function Calendar({
 
 function CalendarDayButton({
   className,
-  day,
   modifiers,
-  locale,
   ...props
 }: React.ComponentProps<typeof DayButton> & { locale?: Partial<Locale> }) {
   const defaultClassNames = getDefaultClassNames()

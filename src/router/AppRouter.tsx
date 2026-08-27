@@ -36,7 +36,7 @@ export default function AppRouter() {
         <Route path="reset_success" element={<ResetSuccessForm />} />
         <Route path="*" element={<h1>Not Found Page</h1>} />
       </Route>
-      <Route path="test" element={<DashboardPage />} />
+      <Route path="dashboard" element={<DashboardPage />} />
       <Route path="*" element={<h1>Not Found Page</h1>} />
     </Routes>
   );
