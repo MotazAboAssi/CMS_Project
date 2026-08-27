@@ -3,7 +3,7 @@ import {
   WithoutCarouselCard,
 } from "@/features/auth/components";
 import {
-  AccountDeactivatedDialog,
+  // AccountDeactivatedDialog,
   NoClinicAccessDialog,
 } from "@/features/auth/components/Dialogs";
 import {
@@ -65,6 +65,7 @@ function ForgotPasswordView() {
   const handlePasswordResetLookup = async (email: string) => {
     setIsSubmitting(true);
     try {
+      console.log(email)
       // Execute your actual API endpoint request check here
       // const userExists = await checkEmailAction(email);
       const userExists = false;
